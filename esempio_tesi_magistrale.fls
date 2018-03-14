@@ -1,8 +1,8 @@
-PWD /Users/Carmine/Downloads/Patch (v. 3)
+PWD /Users/Carmine/Dropbox/School/Master/II Year/Computer System Security/Homework/Essay
 INPUT /usr/local/texlive/2017/texmf.cnf
 INPUT /usr/local/texlive/2017/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2017/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT /Users/Carmine/Downloads/Patch (v. 3)/esempio_tesi_magistrale.tex
+INPUT /Users/Carmine/Dropbox/School/Master/II Year/Computer System Security/Homework/Essay/esempio_tesi_magistrale.tex
 OUTPUT esempio_tesi_magistrale.log
 INPUT /usr/local/texlive/2017/texmf-dist/tex/latex/toptesi/toptesi.cls
 INPUT /usr/local/texlive/2017/texmf-dist/tex/latex/toptesi/toptesi.cls
@@ -250,9 +250,11 @@ INPUT esempio_tesi_magistrale.toc
 INPUT esempio_tesi_magistrale.toc
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
 OUTPUT esempio_tesi_magistrale.toc
-INPUT latex.tex
-INPUT latex.tex
+INPUT first.tex
+INPUT first.tex
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
+INPUT latex.tex
+INPUT latex.tex
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/cm/cmss12.tfm
