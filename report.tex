@@ -4,15 +4,15 @@
 %
 \documentclass[a4paper,12pt]{article}
 %
-% This is to create hyperlinks for index, URLs and citations
-% (now we can use the command \url{...} to create URL with hyperlink)
-% 
+% This is to create hyperlinks for index, URLs and citations (now we can use the
+% command \url{...} to create URL with hyperlink)
+%
 \usepackage{color}
 \usepackage[a4paper,colorlinks=true,urlcolor=blue,citecolor=blue,linkcolor=blue,bookmarks=false]{hyperref}
 %
-% This allows inclusion of pictures.
-% Create figures with PowerPoint and then export them individually
-% in PDF, PNG, JPEG, or GIF format (in order of preference)
+% This allows inclusion of pictures. Create figures with PowerPoint and then
+% export them individually in PDF, PNG, JPEG, or GIF format (in order of
+% preference)
 %
 \usepackage[pdftex]{graphicx}
 \DeclareGraphicsExtensions{.pdf,.png,.jpg,.gif}
@@ -47,14 +47,10 @@
 %
 \begin{document}
 
-\title{Security of Docker containers
-\\
+\title{Security of Docker containers \\
 {\normalsize Report for the Computer Security exam at the Politecnico di Torino}
-}
-\author{Carmine D'Amico (239540)
-\\
-{\normalsize tutor: Antonio Lioy}
-}
+} \author{Carmine D'Amico (239540) \\
+{\normalsize tutor: Antonio Lioy} }
 \date{July 2018}
 \maketitle
 
@@ -72,8 +68,8 @@
 
 \section{Introduction}
 
-Explain here why the XYZ protocol is important
-and what was the purpose of the present work.
+Explain here why the XYZ protocol is important and what was the purpose of the
+present work.
 
 If you want to reference a web site you can do like this:
 \url{http://www.polito.it}.
@@ -82,31 +78,39 @@ If you want to reference a web site you can do like this:
 
 \section{State of the art}
 
-In computer science, the term \textit{virtualisation} is referred to the 
-creation of virtual computational resources. These resources, normally supplied 
-as hardware, are provided instead to the user by the operating system through the 
-creation of a new abstraction layer. OSs, storage devices or network resources 
-could all be virtualised. Virtualisation can be obtained at different levels and 
-using different techniques.
-\par\textit{Virtual machines} have represented for many years the state of the art
-of the virtualisation, being used in both consumer and enterprise contexts. In 
-the last years a new technology, based on \textit{containers}, has started to 
-gain more attention, thanks to its benefits. Docker is an open source container 
-technology, stepped into the limelight thanks to its simple interface, which allows
-to create and control containers. 
+In computer science, the term \textit{virtualisation} is referred to the
+creation of virtual computational resources. These resources, normally supplied
+as hardware, are provided instead to the user by the operating system through
+the creation of a new abstraction layer. OSs, storage devices or network
+resources could all be virtualised. Virtualisation can be obtained at different
+levels and using different techniques. \par\textit{Virtual machines} have
+represented for many years the state of the art of the virtualisation, being
+used in both consumer and enterprise contexts. In the last years a new
+technology, based on \textit{containers}, has started to gain more attention,
+thanks to its benefits. Docker is an open source container technology, stepped
+into the limelight thanks to its simple interface, which allows to create and
+control containers. 
 
 \subsection{From virtual machines...}
 
-With the term virtual machines it is intended an hypervisor-based virtualisation,
-that is a type of virtualisation that acts at hardware level. Virtual machines 
-(VMs) are established on top of the host operating system, providing applications
-with their dependencies, but also an entire guest OS and a separate kernel. 
-\par
-Hypervisors are distinguished in two different types, the ones that work 
-directly on top of the host's hardware (bare metal hypervisors) and the ones 
-that are on top host's OS (hosted hypervisors). The first type provides better 
-performances, not having the overhead of the extra layer of the host's operating 
-system. On the contrary the second type can be managed easier.
+With the term virtual machines it is often intended an \textit{hypervisor}-based
+virtualisation, that is a type of virtualisation that acts at hardware level.
+Virtual machines (VMs) are established on top of the host operating system,
+providing applications with their dependencies, but also an entire guest OS and
+a separate kernel. One or more virtual machines can be run on the same machine.
+Hypervisors are distinguished in two different types, the one that works
+directly on top of the host's hardware (\textbf{bare metal hypervisor}) and the
+one that is on top host's OS (\textbf{hosted hypervisor}). \par Bare metal
+hypervisor provides better performances, not having the overhead of the extra
+layer of the host's operating system. It manages directly hardware and the
+guest's operating system. On the contrary hosted hypervisor can be manged in an
+easier way, running as a normal computer program on the user's operating system.
+\par As said before, the hypervisor needs to run on the user's computer, which
+is defined as \textit{host machine}, while each virtual machines is called
+\textit{guest machine}. It is important to remember this terminology, because it
+will be used also in the following, referring to containers. 
+
+% figure of the two types of hypervisor based virtualisation
 
 
 \subsection{...to containers}
@@ -121,99 +125,32 @@ system. On the contrary the second type can be managed easier.
 
 \section{Hardening Docker}
 
-\section{Old}
-
-Describe the protocol in detail, trying to demonstrate knowledge
-of the topics covered in the course. In other words, don't limit
-yourself just to list security features but explain why they are
-important and provide your opinion if they are correctly implemented
-or could be improved.
-
-You can reference a figure by using the appropriate command,
-as in the case of \myfig{\ref{fig:handshake}},
-that will be automatically placed on the page and numbered by LaTeX.
-
-You can also cite papers published at conferences, like \cite{move2008},
-or journals \cite{dh} or an RFC \cite{gloss}.
-
-If the section contains a lot of information, you may want to split it
-into different subsections, each one with a specific focus as done here.
-
-\subsection{Request format}
-The request contains the ID of the caller and the destination IP address, encoded in four different bytes.
-
-\subsection{Response format}
-The response contains a status code (three digits encoded in ASCII)
-followed by the answer encoded in ISO-8859-1 and terminate with CR LF.
-
-
-\section{Experimental evaluation}
-Describe:
-\begin{itemize}
-\item general purpose of the experiments (functional evaluation,
-performance evaluation, comparison with other stuff)
-\item experimental setup (hardware and software,
-including detailed build and configuration instructions if needed)
-\end{itemize}
-Then describe each experiment: its specific purpose (\eg\ testing a specific
-feature of the protocol), the command run, and the output (expected and actual).
-You can use a table like \mytab{\ref{tab:results}} to group the results
-(for example if the same experiment was repeated with several data sizes)
-\begin{table}
-\begin{center}
-\begin{tabular}{|c|c|c|} % three centered columns (but you can also use 'r' for right or 'l' for left)
-\hline
-{\em data size} & {\em raw transfer time} & {\em secure transfer time} \\
-(kB)            & (ms)                    & (ms)\\
-\hline
-128  & 20  & 22 \\
-256  & 22  & 30 \\
-512  & 26  & 37 \\
-1024 & 30  & 99 \\
-\hline
-\end{tabular}
-\end{center}
-\caption{Experimental results.}
-\label{tab:results}
-\end{table}
-
-For performance testing, remember to run not only experiments with various
-data size but also -- in case of a client-server protocol -- stress tests
-for the server (\ie\ increasing number of clients simultaneously requesting
-attention from the server).
-
 \begin{thebibliography}{99}
 %
-% Citations will be numbered according to the order
-% in which they are listed in this section.
+% Citations will be numbered according to the order in which they are listed in
+% this section.
 %
 
 % sample citation from a conference
 \bibitem{move2008}
-P.~Papadimitratos, G.~Calandriello, J.-P.~Hubaux, A.~Lioy,
-``Impact of vehicular communication security on transportation safety'',
-MOVE 2008: IEEE INFOCOM-2008 workshop on Mobile Networking for Vehicular Environments,
-Phoenix (AZ, USA), April 13-18, 2008, pp.~1-6 
+P.~Papadimitratos, G.~Calandriello, J.-P.~Hubaux, A.~Lioy, ``Impact of vehicular
+communication security on transportation safety'', MOVE 2008: IEEE INFOCOM-2008
+workshop on Mobile Networking for Vehicular Environments, Phoenix (AZ, USA),
+April 13-18, 2008, pp.~1-6 
 
 % sample citation from a journal/magazine
 \bibitem{dh}
-W.~Diffie, M.E.~Hellman,
-``New Directions in Cryptography'',
-IEEE Transactions on Information Theory,
-Vol.~IT-22, No.~6,
-November 1976,
-pp.~644--654
+W.~Diffie, M.E.~Hellman, ``New Directions in Cryptography'', IEEE Transactions
+on Information Theory, Vol.~IT-22, No.~6, November 1976, pp.~644--654
 
 % sample citation from a RFC
 \bibitem{gloss}
-R.~Shirey,
-\rfc{4949} ``Internet Security Glossary, Version 2'',
-August 2007
+R.~Shirey, \rfc{4949} ``Internet Security Glossary, Version 2'', August 2007
 
 \end{thebibliography}
 
 \end{document}
 %
-% Before delivering your report, don't forget to run a spell checker,
-% such as aspell (with a UK-english dictionary)
+% Before delivering your report, don't forget to run a spell checker, such as
+% aspell (with a UK-english dictionary)
 %
