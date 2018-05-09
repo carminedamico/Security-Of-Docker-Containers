@@ -159,14 +159,14 @@ processes, that are part of different namespaces, can see different set of
 resources. Namespaces work by assigning to different resources the same name in
 different namespaces. In the Linux kernel six different type of environments are
 implemented:
-  \begin{enumerate}
+  \begin{itemize}
     \item PID Namespace
     \item IPC Namespace
     \item UTS Namespace
     \item Network Namespace
     \item User Namespace
     \item Mount Namespace
-  \end{enumerate} 
+  \end{itemize} 
 
 \subsubsection{Cgroups}
 
@@ -174,19 +174,93 @@ implemented:
 gather, track and limit processes' usage of resources. It is possible to create
 and manage \textit{cgroups} using high level code, assigning PID to a specific
 \textit{cgroup}. They represent the fundamental tool to obtain resource
-isolation, playing an important role also for the CPU and I/O's scheduling.  
-
-
+isolation, playing an important role also for the CPU and I/O's scheduling. The
+resources that can be limited by Cgroups
+are\cite{red_hat_introduction_to_cgroups}:
+\begin{itemize}
+  \item \textbf{memory} - this subsystem sets limits on memory use by tasks in a
+  cgroup and generates automatic reports on memory resources used by those
+  tasks. 
+  \item \textbf{CPU} - this subsystem uses the scheduler to provide cgroup tasks
+  access to the CPU. 
+  \item \textbf{CPUacct} - this subsystem generates automatic reports on CPU
+  resources used by tasks in a cgroup. 
+  \item \textbf{CPUset} - this subsystem assigns individual CPUs (on a multicore
+  system) and memory nodes to tasks in a cgroup.
+  \item \textbf{blkio} - this subsystem sets limits on input/output access to
+  and from block devices such as physical drives (disk, solid state, or USB). 
+  \item \textbf{net\_cls} - this subsystem tags network packets with a class
+  identifier (classid) that allows the Linux traffic controller (tc) to identify
+  packets originating from a particular cgroup task. 
+  \item \textbf{net\_prio} - this subsystem provides a way to dynamically set
+  the priority of network traffic per network interface. 
+  \item \textbf{ns} - the namespace subsystem. 
+  \item \textbf{devices} - this subsystem allows or denies access to devices by
+  tasks in a cgroup. 
+  \item \textbf{freezer} - this subsystem suspends or resumes tasks in a cgroup.
+  \item \textbf{perf\_event} - this subsystem identifies cgroup membership of
+  tasks and can be used for performance analysis. 
+\end{itemize}   
 
 \subsection{Docker}
 
+As today, \textit{Docker} represents the most used computer program for
+operating-system-level virtualisation (containerisation). It is developed by
+\textbf{Docker, Inc}\cite{docker_official_site} and it was introduced during the
+2013's PyCon. During its presentation, \par\textit{Docker} was announced as the
+future of Linux Containers\cite{docker_pycon_presentation}, indeed in ties first
+releases it reiterated many concepts from them, such as \textit{Namespaces} and
+\textit{Cgroups}, but providing a simpler user experience and a complete
+ecosystem to create and manage containers.
+
 \subsubsection{History}
+
+\textbf{Docker} was born as an inside project within \textit{dotCloud}, a
+platform-as-a-service, later renamed to \textbf{Docker}. Solomon
+Hyckes\cite{solomon_hyckes_wiki} was the leader of the project, that was at
+first developed with other \textit{dotCloud}'s engineers, like Andrea Luzzardi
+and Francois-Xavier Bourlet. The project went public, as said before, during
+2013's PyCon and it was released as open source software during the same year.
+Always during 2013, \textit{Docker} distanced itself from LXC (exactly with
+version 0.9), replacing it with a new execution environment,
+\textbf{libcontainer}.\par \textit{Docker} represented a turning point in the
+IT industry, as it can be proved by looking ad its adoption. The following is a
+list of the milestones achieved by the program from
+Wikipedia\cite{docker_history_wiki}:
+\begin{itemize}
+  \item On September 19, 2013, Red Hat and Docker announced a collaboration
+  around Fedora, Red Hat Enterprise Linux, and OpenShift.
+  \item In November 2014 Docker container services were announced for the Amazon
+  Elastic Compute Cloud (EC2).
+  \item On November 10, 2014, Docker announced a partnership with
+  Stratoscale.
+  \item On December 4, 2014, IBM announced a strategic partnership with Docker
+  that enables Docker to integrate more closely with the IBM Cloud.
+  \item On June 22, 2015, Docker and several other companies announced that they
+  are working on a new vendor and operating-system-independent standard for
+  software containers.
+  \item As of October 24, 2015, the project had over 25,600 GitHub stars (making
+  it the 20th most-starred GitHub project), over 6,800 forks, and nearly 1,100
+  contributors.
+  \item A May 2016 analysis showed the following organisations as main
+  contributors to Docker: The Docker team, Cisco, Google, Huawei, IBM,
+  Microsoft, and Red Hat.
+  \item On October 4, 2016, Solomon Hykes announced InfraKit as a new
+  self-healing container infrastructure effort for Docker container
+  environments.
+  \item A January 2017 analysis of LinkedIn profile mentions showed Docker
+  presence grew by 160\% in 2016.[30] The software has been downloaded more than
+  13 billion times as of 2017.
+
+\end{itemize}   
 
 \subsubsection{Implementation}
 
 \newpage
 
 \section{Hardening Docker}
+
+\newpage
 
 \begin{thebibliography}{99}
 %
@@ -195,20 +269,21 @@ isolation, playing an important role also for the CPU and I/O's scheduling.
 %
 
 % sample citation from a conference
-\bibitem{move2008}
-P.~Papadimitratos, G.~Calandriello, J.-P.~Hubaux, A.~Lioy, ``Impact of vehicular
-communication security on transportation safety'', MOVE 2008: IEEE INFOCOM-2008
-workshop on Mobile Networking for Vehicular Environments, Phoenix (AZ, USA),
-April 13-18, 2008, pp.~1-6 
+ 
+\bibitem{red_hat_introduction_to_cgroups}
+\url{https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/resource_management_guide/ch01}
 
-% sample citation from a journal/magazine
-\bibitem{dh}
-W.~Diffie, M.E.~Hellman, ``New Directions in Cryptography'', IEEE Transactions
-on Information Theory, Vol.~IT-22, No.~6, November 1976, pp.~644--654
+\bibitem{docker_official_site}
+\url{https://www.docker.com/}
 
-% sample citation from a RFC
-\bibitem{gloss}
-R.~Shirey, \rfc{4949} ``Internet Security Glossary, Version 2'', August 2007
+\bibitem{docker_pycon_presentation}
+\url{https://www.youtube.com/watch?v=wW9CAH9nSLs}
+
+\bibitem{solomon_hyckes_wiki}
+\url{https://en.wikipedia.org/wiki/Solomon_Hykes}
+
+\bibitem{docker_history_wiki}
+\url{https://en.wikipedia.org/wiki/Docker_(software)#History}
 
 \end{thebibliography}
 
