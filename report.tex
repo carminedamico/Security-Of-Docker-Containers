@@ -135,6 +135,12 @@ virtualisation approach, like \textit{Linux-VServer}, \textit{OpenVZ} and
 \textit{LinuX Container (LXC)}. This last will be better described in the next
 section, allowing to better understand the behaviour of containers. 
 
+\begin{figure}[h]
+  \centerline{\includegraphics[width=0.7\textwidth]{Architecture-differences-between-virtual-machine-and-container.png}}
+  \caption{Architecture differences between virtual machine and container}
+  \label{fig:hypervisor_container_difference}
+  \end{figure}
+
 % figure of the OS virtualisation
 
 \subsection{LXC}
@@ -208,10 +214,16 @@ As today, \textit{Docker} represents the most used computer program for
 operating-system-level virtualisation (containerisation). It is developed by
 \textbf{Docker, Inc}\cite{docker_official_site} and it was introduced during the
 2013's PyCon. During its presentation, \par\textit{Docker} was announced as the
-future of Linux Containers\cite{docker_pycon_presentation}, indeed in ties first
+future of Linux Containers\cite{docker_pycon_presentation}, indeed in its first
 releases it reiterated many concepts from them, such as \textit{Namespaces} and
 \textit{Cgroups}, but providing a simpler user experience and a complete
-ecosystem to create and manage containers.
+ecosystem to create and manage containers.\par Docker's success is mainly
+addressable to its portability and lightweight nature, that allow to create high
+density environments. It is the ideal software in scenarios where continuous
+integration and continuous delivery (CI/CD) are required, allowing developers to
+not only build their code, but also test their code in any environment type and
+as often as possible to catch bugs early in the applications development
+life cycle \cite{docker_ci_cd}. 
 
 \subsubsection{History}
 
@@ -254,7 +266,64 @@ Wikipedia\cite{docker_history_wiki}:
 
 \end{itemize}   
 
-\subsubsection{Implementation}
+\subsubsection{Docker's architecture\cite{docker_architecture}}
+
+\textbf{Docker} follows a client-server architecture, where three main
+components can be distinguished (\myfig{\ref{fig:docker-architecture}}):
+\begin{itemize}
+  \item The server, which is a daemon process (called \textbf{dockerd}) running
+  on the host's machine. It is in charge of create and manage Docker's objects.
+  \item A set of interfaces conformed to REST architectural style, that enable
+  programs to communicate with the server, sending instructions.
+  \item A command line interface (CLI) client, that allows the user to interact
+  with Docker using the REST API through their terminal.
+\end{itemize}   
+
+\begin{figure}[h]
+  \centerline{\includegraphics[width=0.7\textwidth]{engine-components-flow.png}}
+  \caption{Docker's architecture.}
+  \label{fig:docker-architecture}
+  \end{figure}
+
+\subsubsection{Docker's objects\cite{docker_objects}}
+
+Docker's workflow includes the interaction with many special purpose objects,
+created and managed by \textbf{containerd}:
+\begin{itemize}
+  \item \textbf{IMAGES} are the basic components involved in the creation of a
+  Docker's container, containing all the instructions that the daemon has to
+  follow. An image can be created from scratch or it can be based on already
+  existing images (for example on the image of \textit{nginx}), where other
+  needed components are installed. A \textit{Dockerfile} is a special file, that
+  follows a very simple syntax, which includes all the steps that must be
+  followed in order to create an image. Each instruction represents a layer in
+  the image. When a new layer is inserted (modifying the \textit{Dockerfile})
+  and a container is rebuilt, only the new layer is rebuilt, speeding up the
+  deployment's process.\par Docker images are stored inside registries, that can
+  be private or public. The two most famous public registries are \textit{Docker
+  Cloud} and \textit{Docker Hub}, the latter is the default one visited by
+  Docker for searching images.   
+  \item \textbf{CONTAINERS} represent the the runnable instances of images.
+  The relationship between images and containers could be compared to the
+  relationship between classes and objects in an object-oriented programming
+  language. A container can be connected to the network or to a storage and it
+  can be defined by its image or by the configurations indicated starting
+  it.\par When a container is started Docker searches locally for all the needed
+  images (downloading them from online public registries if necessary), then a
+  read/write filesystem is allocated, where the container can create or modifies
+  file or directories. By default a container can be connected to the external
+  network using the host's connection. When a container is stopped  any changes
+  to its state that are not stored in persistent storage disappear.
+  \item \textbf{SERVICES} are supported from version 1.12 of Docker. They allow
+  to run containers across different daemons. A series of daemons connected
+  between them compose a \textit{swarm} and they all communicate between them
+  using Docker's REST API. A user can defines \textit{swarm}'s configurations,
+  like the number of \textit{service}'s replica available. A \textit{service} is
+  seen from the external as a single application.
+\end{itemize}   
+
+
+\subsubsection{Security by default}
 
 \newpage
 
@@ -282,8 +351,17 @@ Wikipedia\cite{docker_history_wiki}:
 \bibitem{solomon_hyckes_wiki}
 \url{https://en.wikipedia.org/wiki/Solomon_Hykes}
 
+\bibitem{docker_ci_cd}
+\url{https://www.docker.com/use-cases/cicd}
+
 \bibitem{docker_history_wiki}
 \url{https://en.wikipedia.org/wiki/Docker_(software)#History}
+
+\bibitem{docker_architecture}
+\url{https://docs.docker.com/engine/docker-overview/#docker-architecture}
+
+\bibitem{docker_objects}
+\url{https://docs.docker.com/engine/docker-overview/#docker-objects}
 
 \end{thebibliography}
 
