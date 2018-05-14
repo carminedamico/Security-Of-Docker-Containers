@@ -68,12 +68,6 @@
 
 \section{Introduction}
 
-Explain here why the XYZ protocol is important and what was the purpose of the
-present work.
-
-If you want to reference a web site you can do like this:
-\url{http://www.polito.it}.
-
 \newpage
 
 \section{State of the art}
@@ -322,8 +316,24 @@ created and managed by \textbf{containerd}:
   seen from the external as a single application.
 \end{itemize}   
 
-
 \subsubsection{Security by default}
+
+As stated before, Docker uses some LXC's features, like namespaces and control
+groups. These components provide a series of security features to Docker, like
+isolation and resource accounting. \par With namespaces each process running
+inside a container can't see or interact with processes belonging to other
+containers or to the host system, creating a first form of isolation. Moreover,
+by default containers can't even interact between each other using their network
+interfaces, because each one has its own network stack. It is possible, anyway,
+to setup the host to make network interaction admissible, specifying containers'
+public ports or creating \textit{links}\cite{legacy_container_links} to enable
+IP traffic between them.\par Control groups are essential in order to prevent
+denial-of-service attacks (DoS attacks). Implementing resource accounting and
+limiting, indeed,  they don't allow a single container to bring down the host
+system exhausting one or more sources (CPU, memory, disk I/O, ecc...). This is
+particularly important in a multi-tenant system, where more than one container
+works together. 
+
 
 \newpage
 
@@ -332,12 +342,7 @@ created and managed by \textbf{containerd}:
 \newpage
 
 \begin{thebibliography}{99}
-%
-% Citations will be numbered according to the order in which they are listed in
-% this section.
-%
 
-% sample citation from a conference
  
 \bibitem{red_hat_introduction_to_cgroups}
 \url{https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/resource_management_guide/ch01}
@@ -362,6 +367,9 @@ created and managed by \textbf{containerd}:
 
 \bibitem{docker_objects}
 \url{https://docs.docker.com/engine/docker-overview/#docker-objects}
+
+\bibitem{legacy_container_links}
+\url{https://docs.docker.com/network/links/}
 
 \end{thebibliography}
 
