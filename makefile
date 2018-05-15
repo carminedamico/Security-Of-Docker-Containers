@@ -1,11 +1,14 @@
 all: clean compile view
 
 compile:
-	pdflatex esempio_tesi_magistrale.tex
-	pdflatex esempio_tesi_magistrale.tex
+	pdflatex report.tex
+	pdflatex report.tex
 
 view:
-	open esempio_tesi_magistrale.pdf &
+	open report.pdf &
 
 clean:
-	rm -f esempio_tesi_magistrale.aux esempio_tesi_magistrale.log esempio_tesi_magistrale.out esempio_tesi_magistrale.pdf esempio_tesi_magistrale.toc pdfa-1b.xmpi
+	rm -f report.aux report.log report.out report.pdf report.toc 
+
+check:
+	aspell -c report.tex -l en_GB
