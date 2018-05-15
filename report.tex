@@ -81,9 +81,9 @@ levels and using different techniques. \par\textit{Virtual machines} have
 represented for many years the state of the art of virtualisation, being used in
 both consumer and enterprise contexts. In the last years a new technology, based
 on \textit{containers}, has started to gain more attention, thanks to its
-benefits. Docker is an open source container technology, stepped into the
-limelight thanks to its simple interface, which allows to create and control
-containers. 
+benefits. \textbf{Docker} is an open source container technology, stepped into 
+the limelight thanks to its simple interface, which allows to create and control
+containers in an easy way. 
 
 \subsection{From virtual machines...}
 
@@ -260,7 +260,7 @@ Wikipedia\cite{docker_history_wiki}:
 
 \end{itemize}   
 
-\subsubsection{Docker's architecture\cite{docker_architecture}}
+\subsubsection{Docker's architecture}
 
 \textbf{Docker} follows a client-server architecture, where three main
 components can be distinguished (\myfig{\ref{fig:docker-architecture}}):
@@ -270,7 +270,7 @@ components can be distinguished (\myfig{\ref{fig:docker-architecture}}):
   \item A set of interfaces conformed to REST architectural style, that enable
   programs to communicate with the server, sending instructions.
   \item A command line interface (CLI) client, that allows the user to interact
-  with Docker using the REST API through their terminal.
+  with Docker using the REST API through their terminal.\cite{docker_architecture}
 \end{itemize}   
 
 \begin{figure}[h]
@@ -279,7 +279,7 @@ components can be distinguished (\myfig{\ref{fig:docker-architecture}}):
   \label{fig:docker-architecture}
   \end{figure}
 
-\subsubsection{Docker's objects\cite{docker_objects}}
+\subsubsection{Docker's objects}
 
 Docker's workflow includes the interaction with many special purpose objects,
 created and managed by \textbf{containerd}:
@@ -313,8 +313,9 @@ created and managed by \textbf{containerd}:
   between them compose a \textit{swarm} and they all communicate between them
   using Docker's REST API. A user can defines \textit{swarm}'s configurations,
   like the number of \textit{service}'s replica available. A \textit{service} is
-  seen from the external as a single application.
-\end{itemize}   
+  seen from the external as a single application.\cite{docker_objects}
+\end{itemize}
+
 
 \subsubsection{Security by default}
 
@@ -352,7 +353,7 @@ ones needed by a container in order to run its processes. \par As we will see
 there are other kernel security features that can work with Docker in order to
 achieve system hardening, but which are not active by the default. In the same
 way there are other security aspects to take in consideration when it is decided
-to use Docker.   
+to use Docker. \cite{docker_security_by_default}
 
 
 \newpage
@@ -390,6 +391,9 @@ to use Docker.
 
 \bibitem{legacy_container_links}
 \url{https://docs.docker.com/network/links/}
+
+\bibitem{docker_security_by_default}
+\url{https://docs.docker.com/engine/security/security/}
 
 \end{thebibliography}
 
