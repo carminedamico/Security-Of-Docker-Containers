@@ -1,0 +1,44 @@
+\subsubsection{Security by default}
+
+As stated before, Docker uses some LXC's features, like namespaces and control
+groups. These components provide a series of security features to Docker, like
+isolation and resource accounting. Docker takes other security measures by
+default in order to strengthen itself.\par With namespaces each process running
+inside a container can't see or interact with processes belonging to other
+containers or to the host system, creating a first form of isolation. Moreover,
+by default containers can't even interact between each other using their network
+interfaces, because each one has its own network stack. It is possible, anyway,
+to setup the host to make network interaction admissible, specifying containers'
+public ports or creating \textit{links}\cite{legacy_container_links} to enable
+IP traffic between them.\par Control groups are essential in order to prevent
+denial-of-service attacks (DoS attacks). Implementing resource accounting and
+limiting, indeed,  they don't allow a single container to bring down the host
+system exhausting one or more sources (CPU, memory, disk I/O, ecc...). This is
+particularly important in a multi-tenant system, where more than one container
+works together. \par Docker daemon requires \textbf{root privileges} to run, so
+it is advisable to allow only trusted users to run it. This concept is stressed
+by the fact that Docker can share a directory between the host and a container,
+providing full access to it. Nothing prevent the host from sharing its root
+directory (\textbf{"/"}) with the container. For this reason Docker's REST API
+uses UNIX socket, preventing \textbf{cross-site request forgery attacks} to the
+host machine. \par Always by default, Docker destroys the "root/not root"
+dichotomy, providing to containers only a restricted set of
+\textbf{capabilities}. These capabilities allows to have a fine-grained access
+control system, restricting container's privileges. There are capabilities for
+many areas where root privileges are usually needed. Using capabilities the
+concept of "root" changes its meaning inside a container: a user can be "root"
+inside a container, still not having all the normal privileges of a real "root
+user". This reduces the vectors of attack by malicious users considerably.
+Docker has a white-list approaches to capabilities, enabling by default only the
+ones needed by a container in order to run its processes. \par As we will see
+there are other kernel security features that can work with Docker in order to
+achieve system hardening, but which are not active by the default. In the same
+way there are other security aspects to take in consideration when it is decided
+to use Docker. \cite{docker_security_by_default}
+
+
+\bibitem{legacy_container_links}
+\url{https://docs.docker.com/network/links/}
+
+\bibitem{docker_security_by_default}
+\url{https://docs.docker.com/engine/security/security/}
