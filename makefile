@@ -1,4 +1,4 @@
-all: clean compile view
+all: clean check compile view
 
 compile:
 	pdflatex report.tex
