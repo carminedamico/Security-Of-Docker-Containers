@@ -82,22 +82,22 @@
 In computer science, the term \textit{virtualisation} is referred to the
 creation of virtual computational resources\cite{wikipedia_virtualization}.
 These resources, normally supplied as hardware, are instead provided to the user
-by the operating system through the creation of a new abstraction layer. OSs,
-storage devices or network resources could all be virtualised. Virtualisation
-can be obtained at different levels and using different techniques.
-\par\textit{Virtual machines} have represented for many years the state of the
-art of virtualisation, being used in both consumer and enterprise contexts. In
-the last years a new technology, based on \textit{containers}, has started to
-gain more attention, specially thanks to its advantages like the acceleration of
-the development cycle and the possibility to thicken applications on servers.
-\textit{Docker} is an open source container technology, stepped into the
-limelight thanks to its simple interface, which allows to create and manage
-containers in an easy way. 
+by the operating system through the creation of a new abstraction layer.
+Operating systems, storage devices or network resources could all be
+virtualised. Virtualisation can be obtained at different levels and using
+different techniques. \par\textit{Virtual machines} have represented for many
+years the state of the art of virtualisation, being used in both consumer and
+enterprise contexts. In the last years a new technology, based on
+\textit{containers}, has started to gain more attention specially thanks to its
+advantages in terms of acceleration of the development cycle and possibility to
+thicken applications on servers. \textit{Docker} is an open source container
+technology became popular thanks to its simple interface, which allows to create
+and manage containers in an easy way. 
 
 \subsection{From Virtual Machines...}
 
 With the term virtual machines it is often intended an \textit{hypervisor-based
-virtualisation}, that is a type of virtualisation that acts at hardware level.
+virtualisation}, that is a type of virtualisation which acts at hardware level.
 Virtual machines (VMs) are established on top of the host operating system,
 providing applications with their dependencies, but also an entire guest OS and
 a separate kernel. One or more virtual machines can be run on the same machine.
@@ -107,13 +107,13 @@ one that is on top of the host's OS (\textit{hosted hypervisor})
 (\myfig{\ref{fig:hypervisor_difference}}). \par Bare metal hypervisor provides
 better performances, not having the overhead of the extra layer of the host's
 operating system. It manages directly hardware and the guest's operating system.
-On the contrary hosted hypervisor can be manged in an easier way, running as a
+On the contrary hosted hypervisor can be manged in an easier way running as a
 normal computer program on the user's operating
 system\cite{types_of_hypervisor}. \par As said before, the hypervisor needs to
-run on the user's computer, which is defined as \textit{host machine}, while
-each virtual machines is called \textit{guest machine}. It is important to
-remember this terminology, because it will be used also in the following,
-referring to containers. 
+run on the user's computer which is defined as \textit{host machine}, while each
+virtual machines is called \textit{guest machine}. It is important to remember
+this terminology because it will be used also in the following, referring to
+containers. 
 
 \begin{figure}[ht!]
   \centerline{\includegraphics[width=0.7\textwidth]{difference_bare_metal_hosted_hypervisor.png}}
@@ -128,11 +128,11 @@ referring to containers.
 virtualisation, mainly spread in the last years. Compared to hypervisor-based
 virtualisation it results lighter, using the host's kernel to run multiple
 virtual environments. It virtualises at operating system level (it is also known
-as \textit{OS-level virtualisation}), allowing other applications to run without
+as \textit{OS-level virtualisation}) allowing other applications to run without
 installing their own kernel on the host. Containers look like separated processes
 that just share host's kernel and are more isolated from the host's
 system (\myfig{\ref{fig:container_architecture}}). \par Resources are provided by
-the host's OS, together with the container engine. A container engine is the
+the host's OS together with the container engine. A container engine is the
 technology in charge of create and manage containers. \textit{Docker} represents
 one of the most important and most used container engine. A computer program
 running inside a container can only see the resources allocated to that particular
@@ -146,7 +146,7 @@ environments for their lightness and for their approach to host's resources
 sharing, which increases average hardware use.\par There are many examples of
 containerisation implementations, like \textit{Linux-VServer}, \textit{OpenVZ}
 and \textit{LinuX Container (LXC)}. This last implementation will be better
-described in the next section, allowing to better understand the behaviour of
+described in the next section allowing to better understand the behaviour of
 containers. 
 
 \begin{figure}[ht!]
@@ -189,7 +189,7 @@ implemented\cite{red_hat_introduction_to_namespaces}:
     container process. 
     \item \textbf{UTS namespaces} isolate two system identifiers (nodename and
     domainname) returned by the uname() system call. This allows each container
-    to have its own hostname and NIS domain name, which is useful for
+    to have its own hostname and NIS domain name which is useful for
     initialisation and configuration scripts based on these names. 
     \item \textbf{IPC namespaces} isolate certain inter-process communication
     (IPC) resources, such as System V IPC objects and POSIX message queues. This
@@ -200,7 +200,7 @@ implemented\cite{red_hat_introduction_to_namespaces}:
     system resources associated with networking, firewall and routing tables.
     This allows container to use separate virtual network stack, loop-back device
     and process space. In this way it is possible to add virtual or real devices
-    to the container, assigning them their own IP Addresses and even full iptables
+    to the container assigning them their own IP Addresses and even full iptables
     rules. 
     \item \textbf{PID namespaces} allow processes in different containers to
     have the same PID, so each container can have its own init (PID1) process
@@ -258,7 +258,7 @@ indeed from its first releases it reiterated many concepts from them, such as
 \textit{Namespaces} and \textit{Cgroups}, but providing a simpler user
 experience and a complete ecosystem to create and manage containers.\par
 Docker's success is mainly addressable to its portability and lightweight
-nature, that allow to create high density environments. It is the ideal software
+nature which allow to create high density environments. It is the ideal software
 in scenarios where continuous integration and continuous delivery (CI/CD) are
 required, allowing developers to not only build their code, but also test their
 code in any environment type and as often as possible to catch bugs early in the
@@ -307,35 +307,36 @@ Wikipedia\cite{docker_history_wiki}:
 
 \subsubsection{Docker's Architecture}
 
-\textit{Docker} follows a client-server architecture, where three main
-components can be distinguished (\myfig{\ref{fig:docker-architecture}}):
+\textit{Docker} follows a client-server architecture where three main components
+can be distinguished\cite{docker_architecture}
+(\myfig{\ref{fig:docker-architecture}}):
 \begin{itemize}
   \item The server, which is a daemon process (called \textbf{dockerd}) running
   on the host's machine. It is in charge of create and manage Docker's objects.
   \item A set of interfaces conformed to REST architectural style, that enable
   programs to communicate with the server, sending instructions.
   \item A command line interface (CLI) client, that allows the user to interact
-  with Docker using the REST API through their terminal. \cite{docker_architecture}
+  with Docker using the REST API through their terminal. 
 \end{itemize}   
 
 \begin{figure}[ht!]
-  \centerline{\includegraphics[width=0.8\textwidth]{engine-components-flow.png}}
+  \centerline{\includegraphics[width=0.6\textwidth]{docker_architecture.png}}
   \caption{Docker's architecture}
   \label{fig:docker-architecture}
   \end{figure}
 
-\subsubsection{Docker's Objects}
+\subsubsection{Docker's Components}
 \label{sec:docker_object}
 
-Docker's workflow includes the interaction with many special purpose objects,
+Docker's workflow includes the interaction with many special purpose components
 created and managed by \textbf{containerd}:
 \begin{itemize}
   \item \textbf{IMAGES} are the basic components involved in the creation of a
-  Docker's container, containing all the instructions that the daemon has to
+  Docker's container, they include all the instructions that the daemon has to
   follow in order to run a container. An image can be created from scratch or it
   can be based on already existing images (for example on the image of
   \textit{nginx} if we want to create a web server) where other needed
-  components are installed. \par A \textit{Dockerfile} is a special file, that
+  components are installed. \par A \textit{Dockerfile} is a special file that
   follows a very simple syntax, which includes all the steps that must be
   followed in order to create an image. Each instruction represents a layer in
   the image. When a new layer is inserted (modifying the \textit{Dockerfile})
@@ -344,7 +345,7 @@ created and managed by \textbf{containerd}:
   \textit{docker build} command. \par Another way to create an image is to run
   an already existing container, perform all the modifications needed and at the
   end save the status achieved as a new image with the \textit{docker commit}
-  command.\par Docker images are stored inside registries, that can be private
+  command.\par Docker images are stored inside registries which can be private
   or public. The two most famous public registries are \textit{Docker Cloud} and
   \textit{Docker Hub}, the latter is the default one visited by Docker for
   searching images. Developers can build their own images and upload them to the
@@ -365,25 +366,119 @@ created and managed by \textbf{containerd}:
   modifies file or directories.  By default a container can be connected to the
   external network using the host's connection. When a container is stopped  any
   changes to its state that are not stored in persistent storage disappear.
-  \item \textbf{SERVICES} are supported from version 1.12 of Docker. They allow
-  to run containers across different daemons. A series of daemons connected
-  between them compose a \textit{swarm} and they all communicate between them
-  using Docker's REST API. A user can defines \textit{swarm}'s configurations,
-  like the number of \textit{service}'s replica available. A \textit{service} is
-  seen from the external as a single application. \cite{docker_objects}
+  \item \textbf{SERVICES} are supported from version 1.12 of Docker. Like in a
+  distributed system, services represent the different pieces of an application.
+  In particular in the context of Docker a service is just a running container
+  in which it is defined the way that its image will be executed. Through
+  services indeed a user could configure the port which a container will use,
+  the number of replicas that will run of such container to better scale an
+  application, etc... \par The services that will run on a host can be
+  configured by a special Docker file: \textit{docker-compose.yml}. This file
+  contains all the instructions that must be followed to run our application's
+  services. For each service indicated it specifies where to pull the
+  correspondent Docker image, the port mapping between the container and the
+  host, the load-balanced overlay network that will be used and all the
+  information needed to deploy such service (the number of replicas, the amount
+  of resources needed, the restart policy, etc...).
+  \item \textbf{SWARMS} are cluster composed by machines that are running
+  Docker. A \textit{swarm manager} is a machine belonging to the cluster and in
+  charge of executing the commands received. A user continues to run Docker
+  commands normally as described before, the difference is that such commands
+  are executed by the swarm manager, which decides how to run these commands
+  (for example filling the host with less running containers or assigning to
+  each host one instance of the specified container). In a cluster there could
+  be more than one swarm manager. \textit{Workers} are machines belonging to the
+  swarm, but without the same privileges of a swarm managers. They just provide
+  more computational capacity to the cluster. In general all the machines inside
+  a Docker swarm are referred as \textit{nodes}.
 \end{itemize}
+
+\subsubsection{Common Usage Of Docker}
+
+As stated in the previous paragraphs, Docker's success is mainly attributable to
+its simplicity of use and to its "lightness". Such characteristics have
+increased its adoption among developers and organisations. John Willis, a
+Technical Evangelist at Docker, during an interview for the IBM Infrastructure
+Blog stated\cite{ibm_interview_john_willis} that the most common use cases for
+Docker are mainly three:
+\begin{itemize}
+  \item \textit{Integration test}: With virtual machines running integration
+  test could take also days. The virtual machines should be configured and
+  installed, then after the tests they should also be rebase back to their
+  original state. On the contrary with Docker the configuration and the
+  execution of a containers takes less time and also rebase could be done in few
+  seconds.
+  \item \textit{Immutable delivery model}: With Docker when a developer needs to
+  commit its code he can just commit a Docker image. In such a way the software
+  tested on his own computer will be the same identical software which will run
+  in production. This principle allows to speed up the deployment process, not
+  requiring further configurations to run the software on the production hosts.
+  \item \textit{Container as service}: Docker allows to build up a collection of
+  pre-built binaries (Docker images) that can be shared, for example pushing
+  them into the Docker Hub. In such a way an organisation can speed up its
+  production and also increase its set of used tools, not needing to set up its
+  own tools but just to pull new images.
+  
+\end{itemize}
+
 
 \newpage
 
 \section{Docker's Security Threats}
+ 
+In this section I analyse the most important security threats for a Docker
+system. For each possible threat I describe its characteristics and how it could
+be possible to take advantage of it. I also provide a practical example of an
+attack which exploits the vulnerability described, exception made for those
+threats that are more generic, not regarding specifically Docker containers.
+\par In the next section I will start from these security threats in order to
+define the best practice to follow using Docker.
 
-\cite{mitigating_docker_security_issues_yasrab}
+\subsection{Analysis Of Docker Security Threats}
 
-\cite{sysdig_docker_vulnerabilities}
-
+In order to list the main security threats that afflict a Docker system, I
+started from a possible definition of the attack surface for the Docker
+containers. I have analysed a series of studies present in literature, from
+Yasrab's paper "Mitigation Docker Security
+Issues"\cite{mitigating_docker_security_issues_yasrab} to  "To Docker or Not to
+Docker: A Security Perspective" written by Combe, Martin and Di
+Pietro\cite{to_docker_or_not_to_docker}, through Sysdig's list of the well known
+vulnerabilities of Docker\cite{sysdig_docker_vulnerabilities}. Finally, I have
+divided the Docker attack surface in five macro areas:
+\begin{itemize}
+  \item \textit{Isolation}: The most important difference between a normal
+  process running on a host and a Docker container is the degree of isolation of
+  the latter. As seen in the previous section, Docker uses different Linux
+  kernel features to achieve an optimal isolation. However, such tools must be
+  well configured, because it is possible that their default behaviour leads to
+  \textit{denial-of-service attacks}, \textit{container breakouts} or
+  \textit{ARP spoofing attacks}.
+  \item \textit{Host Hardening}: Docker containers share the kernel with the
+  host making them lighter than a virtual machine. Such characteristic
+  increases the importance of the kernel security, cause both the containers and
+  the host depend on it. \textit{Kernel exploits}, for example, can lead to
+  malfunctions of both the host and the containers. 
+  \item \textit{Network Security}: Docker relies completely on the network for
+  the distribution of images. If some attacker obtains to \textit{poison the
+  images} that a container is downloading, he can damage the entire system.
+  \item \textit{Erroneous Configurations}: Docker has made of its simplicity of
+  use its most important feature. However some precautions must be taken
+  configuring a Docker system. For example an \textit{erroneous management of
+  the secrets} can bring to an impairment of the system. As well as the use of
+  \textit{outdated Docker images}, can lead to have bugs in the system easily
+  exploitable by an attacker.
+  \item \textit{Running Container}: Inside a Docker container there is anyway
+  our running program. All the bugs and vulnerabilities that afflict our program
+  can be used by an attacker to hit our system. For this reason, to cover all the
+  attack vectors of our Docker containers, we should also \textit{monitor the
+  runtime activities of our containers}.
+\end{itemize}
+From these macro areas, I have extracted eight security threats for Docker
+containers, analysing them in the following paragraphs.
+ 
 \subsubsection{Kernel Exploits}
 
-One of the main advantages of container-based virtualisation, and so of Docker,
+One of the main advantages of container-based virtualisation, so of Docker,
 is that the host shares its kernel with all the running containers. In this way
 this kind of virtualisation results lighter than an hypervisor-based one,
 avoiding the overhead of installing the guest's kernel. As we will see this is
@@ -393,27 +488,27 @@ kernel, indeed, handles all the containers' operations, so in case of a
 \textit{kernel-level exploit} all the containers that are running on the system
 are at risk of being compromised.\par Kernel exploits can be done by an attacker
 who takes advantages of a bug or a vulnerability of the kernel. In this way he
-can run his software in kernel mode, manipulating processes' privileges, that
-can bring him to take control of the system. If such exploit is performed inside
+can run his software in kernel mode, manipulating processes' privileges and
+bringing him to take control of the system. If such exploit is performed inside
 a container, it has consequences also on the host OS. In particular if the
 attack allows the attacker to execute his code, this execution will happen on
 the host OS, not inside the container; in the same way if the attack allows to
 read arbitrary memory, so the attacker could read and write memory parts that
 belong to other containers.\par Kernel exploits are also a security threat in
-the context of an hypervisor-based virtualisation, but in this case the attack
+the context of an hypervisor-based virtualisation, but in that case the attack
 would result more complicated. Indeed the attacker should be able to exploit the
 VM's kernel, the hypervisor and the host's kernel. While on a container-based
 virtualisation it is sufficient to exploit the only host's kernel.
 
 \bigbreak\textbf{Practical Example}\bigbreak 
 
-In literature there many examples of kernel exploits used to obtain control over
-an entire system. In this section we will focus on \textit{Dirty COW}, an attack
-that takes advantage of a privilege-related vulnerability in order to allow the
-attacker to gain high privileges on the system. The official reference to this
-bug is CVE-2016-5195.\par It exploits a race condition inside the Linux kernel's
-memory subsystem that handles the copy-on-write (COW) mechanism, in this way an
-unprivileged user could gain write access to a read-only memory
+In literature there are many examples of kernel exploits used to obtain control
+over an entire system. In this section I will focus on \textit{Dirty COW}, an
+attack that takes advantage of a privilege-related vulnerability in order to
+allow the attacker to gain high privileges on the system. The official reference
+to this bug is CVE-2016-5195.\par It exploits a race condition inside the Linux
+kernel's memory subsystem that handles the copy-on-write (COW) mechanism, in
+this way an unprivileged user could gain write access to a read-only memory
 part\cite{red_hat_dirtycow}.\par In order to obtain this exploit, we must create
 a loop involving two threads:
 \begin{itemize}
@@ -426,7 +521,7 @@ a loop involving two threads:
   \end{itemize}
 The simultaneous execution of these two threads in a loop could bring the
 kernel to point to the modified copy of a file in memory that should instead be
-read-only\cite{dirtycow_how_it_worrks}
+read-only\cite{dirtycow_how_it_worrks}.
 
 \subsubsection{Denial-of-service}
 
@@ -455,7 +550,7 @@ default, so a container can use as much of a given resource as the host's kernel
 scheduler allows. We will see in the next section how to configure Docker to
 work with Cgroups, managing resources for containers. 
 
-\bigbreak\textbf{Practical Example}\bigbreak 
+%\bigbreak\textbf{Practical Example}\bigbreak 
 
 \subsubsection{Container Breakout}
 
@@ -465,7 +560,7 @@ all the other containers in the system. This situation can be achieved using an
 exploit or a not correct configuration of the Docker environment. Such type of
 attack is known as \textit{container breakout}.\par This type of vulnerability,
 according to Docker website\cite{docker_blog_about_container_breakout}, was
-fixed in Docker 1.0, nevertheless an not trusted program running with root
+fixed in Docker 1.0, nevertheless a not trusted program running with root
 privileges inside a Docker container could still represent a source of risk.
 \par Container breakout was mostly possible in situations where privileges
 inside a container were not properly configured. By default, users are not
@@ -481,12 +576,12 @@ capabilities from a blacklist to a white-list.
 \bigbreak\textbf{Practical Example}\bigbreak 
 
 One of the most famous container breakout exploit is 2014's
-\textit{Shocker}\cite{shocker}. In this section we will analyse such attack,
-which has the aim to demonstrates how a Docker container could access some
-privileged file-system data. As said before, this kind of vulnerability was
-fixed with Docker 1.0, but it could still be interesting to understand how this
-type of attack worked\cite{shocker_how_it_works}.\par Shocker takes advantage of
-the \textit{CAP\_DAC\_READ\_SEARCH} capability, that was granted by default to a
+\textit{Shocker}\cite{shocker}. We will analyse such attack, with the aim to
+demonstrates how a Docker container could access some privileged file-system
+data. As said before, this kind of vulnerability was fixed with Docker 1.0, but
+it could still be interesting to understand how this type of attack
+worked\cite{shocker_how_it_works}.\par Shocker takes advantage of the
+\textit{CAP\_DAC\_READ\_SEARCH} capability, that was granted by default to a
 superuser inside a Docker container. This capability is the one which allows to
 use the system call \textit{open\_by\_handle\_at()}, conceding to access a file
 on a mounted file-system through a file\_handle structure. A file\_handle is
@@ -494,23 +589,21 @@ quite different than a file descriptor, because it can be generated inside a
 process using \textit{name\_to\_handle\_at()} and then recalled by another
 process with \textit{open\_by\_handle\_at()} (while a file descriptor can't be
 properly passed between different processes). In this way if a process has an
-handle opened for a host's file or a different container's and our container has
-not the privileges to access it, we can still call
+handle opened for a host's file or a different container's file and our
+container has not the privileges to access it, we can still call
 \textit{open\_by\_handle\_at()} on the opened handle.
 
-\subsubsection{Images Insecurity}
+\subsubsection{Poisoned Images}
 
 As said in \ref{sec:docker_object}, Docker images represent one of the most
 fundamental building blocks for a container. If an attacker could obtain to make
-his images to run, the host and all its containers are seriously at risk. In the
-same way it is important to make sure that the running images are updated, not
-containing any known vulnerability.\par Container images are claimed to be
-downloaded and verified by default by the system, thanks to the presence of a
-signed manifest inside the image. In such mechanism however Docker does not
-verify the image's checksum from the manifest. In this way an attacker could
-provide his images infected with some virus, together with a signed manifest,
-tricking Docker verification and leading to many vulnerabilities the user's
-system. \par Jonathan Rudenberg explained, in a
+his images to run, the host and all its containers are seriously at risk. \par
+Container images are claimed to be downloaded and verified by default by the
+system, thanks to the presence of a signed manifest inside the image. In such
+mechanism however Docker does not verify the image's checksum from the manifest.
+In this way an attacker could provide his \textit{poisoned images} with some virus,
+together with a signed manifest, tricking Docker verification and leading to
+many vulnerabilities the user's system. \par Jonathan Rudenberg explained, in a
 post\cite{docker_image_insecurity} on his blog, how the process of downloading a
 Docker image from the Docker Hub is extremely insecure. Such images are
 downloaded from an HTTPS server and then they immediately go through a
@@ -528,6 +621,22 @@ archive extraction.\par This vulnerability exploited the way the Docker service
 unpacked images or builds after a "docker pull". In such a way an attacker could
 use this flaw to provide a malicious image or build that, when unpacked, would
 escalate their privileges on the system.
+
+\subsubsection{Static Images' Threats}
+
+The importance of images in Docker ecosystem makes it of primary importance to
+attest their security. On the one hand we have seen how images could be
+\textit{poisoned} by an attacker, on the other hand even if no attacker tries to
+manipulate our images it doesn't mean that our images are safe. It is important
+to make sure that the images at the base of our running containers are updated,
+not containing any known vulnerabilities. An outdated image can be affected by a
+series of security threats that were already fixed in an updated version of the
+same image. \par A study by Gummaraju, Desikan, and Turner at BanyanOps
+demonstrated how about more than the 30\% of the official repositories present
+on Docker Hub are affected by a variety of security threats, such as
+\textit{heartbleed}, \textit{shellshock}, \textit{poodle}, etc... These numbers
+grow up to the 40\% taking in consideration also the images loaded by
+users\cite{gummaraju_desikan_turner}. 
 
 \subsubsection{Management Of Secrets}
 
@@ -590,6 +699,109 @@ quite easy, needing only an access to to Internet and a web browser:
   \end{lstlisting}
 \end{itemize} 
 
+\subsubsection{ARP Spoofing}
+
+Inside an host, all the containers, if not properly configured, can communicate
+with each other through their network interfaces. Docker uses namespaces to
+create an independent network stack for each container, giving them their own
+own IP addresses, IP tables, etc... By default Docker provides connectivity
+between the containers creating a Virtual Ethernet Bridge, named
+\textit{docker0}. At container creation time, Docker creates and connect a new
+network interface with a unique name to the bridge. Such interface is also
+connected to the \textit{eth0} interface of the
+container(\myfig{\ref{fig:docker_network_model}}). This type of configuration is
+vulnerable to \textit{ARP spoofing} attacks, since the bridge forwards all of
+its incoming packets without any filtering. \par An ARP spoofing attack is a
+very well known attack in literature. It takes advantage of the ARP protocol,
+which doesn't provide a basic method to authenticate ARP messages. In order to
+perform such type of attack, the attacker must be connected directly to the
+target LAN with his machine or running a compromised host that belongs to the
+network. In the case of Docker, such conditions is satisfied if the attacker
+manages to compromises a container running on a host: in this way he would have
+access to the local network between all the containers running on the host. The
+main goal of this type of attack is to divert traffic directed to a container to
+the compromised container controlled by the attacker.   
+\begin{figure}[ht!]
+  \centerline{\includegraphics[width=0.7\textwidth]{docker-network-model.png}}
+  \caption{Docker default network model}
+  \label{fig:docker_network_model}
+  \end{figure}
+
+\bigbreak\textbf{Practical Example}\bigbreak 
+
+A practical example of this type of attack can be reproduced inside a
+containerised environment just running a Docker container with \textit{dSniff}
+installed. Dsniff is a set of password sniffing and network traffic analysis
+tools, which contains among others also \textit{arspoof}, a tool used
+specifically to perform ARP spoofing attack\cite{wiki_dsniff}. \par Such type of
+experiment is described by Philipp Bogaerts in one of his blog post
+\cite{bogaerts_arpspoof}. He shows how it is simple to perform an ARP spoofing
+attack running three containers on the same host, without changing the default
+network configuration:
+\begin{itemize}
+  \item Two containers are created just from the Busybox base image, running the
+  "ifconfig" command on each in order to read their IP address. We will call
+  these two containers just \textit{container\_0} and \textit{container\_1}.
+  \item One container, which will be the one that performs the attack, is created
+  starting from the Debian base image, to which it is installed only dSniff. 
+\end{itemize}
+One of the first two containers ping the other, while the attacker's container
+performs the attack using arspoof:
+\begin{lstlisting}[language=bash,breaklines]
+  arpspoof -i eth0  -t ip_container0 ip_container1 &
+  arpspoof -i eth0  -t ip_container1 ip_container0 &
+\end{lstlisting}
+In such a way all the traffic generated between the first two containers will
+pass through the attacker's container.
+
+\subsubsection{Dynamic Aspects of Docker Security}
+
+All the threats analysed in the former sections regard the launch-time of
+containers. Kernel exploits, denial-of-service, container breakouts, etc... are
+all security threats that can be faced before running our containers. We can
+refer to these as \textit{static aspects} of Docker security. Such threats, as
+we will see in the next chapter, can all be mitigated following some precautions
+during the creation of the images that we will run, using special configurations
+and ad-hoc policies or tools.\par However container's attack surface is not
+limited to such aspects, we must also consider:
+\begin{itemize}
+  \item All the possible vulnerabilities of the application that we want to run
+  inside a container, that can be exploited by an attacker
+  \item All the attacks that can be performed on a vulnerability already
+  discovered but not yet patched (these attacks are also known as zero-day
+  attacks)
+\end{itemize}
+Such attacks can not be avoided at launch-time, but they must be mitigated at
+runtime, monitoring containers' activity . We can refer to them as
+\textit{dynamic aspects} of Docker Security. 
+
+%\subsubsection{Summary}
+
+%All the attacks listed above are summarised in Tab. 1. In the next section I
+%will provide a list of best practices to follow using Docker in order to prevent
+%such threats. For this reason in the following table each attack is associated
+%with a code, that will be reused in the next section to associate to each best
+%practice the attack that it prevents.
+
+%\begin{table}[ht]
+%  \begin{tabular}{ | l | l | p{5cm} |}
+%  \hline
+%  Code & Threat & Practical Example \\ \hline
+%  T1 & Kernel Exploit & test \\ \hline
+%  T1 & 11C & test \\ \hline
+%  T1 & 11C & test \\ \hline
+%  T1 & 11C & test \\ \hline
+%  T1 & 11C & test \\ \hline
+%  T1 & 11C & test \\ \hline
+%  T1 & 11C & test \\ \hline
+%  T1 & 11C & test \\ 
+%  \hline
+%  \end{tabular}
+%  \caption{Lorem Ipsum}
+%  \label{table:docker_threats}
+%\end{table}
+
+
 \newpage
 
 \section{Best Practices For Docker Deployment}
@@ -644,6 +856,9 @@ Docker architecture,\\ \url{https://docs.docker.com/engine/docker-overview/#dock
 \bibitem{docker_objects}
 Docker objects,\\ \url{https://docs.docker.com/engine/docker-overview/#docker-objects}
 
+\bibitem{ibm_interview_john_willis}
+The most common use cases of Docker containers and organisations, \\ \url{https://www.ibm.com/blogs/systems/the-most-common-use-cases-of-docker-containers-and-organizations/}
+
 \bibitem{mitigating_docker_security_issues_yasrab}
 Robail Yasrab,
 ``Mitigating Docker Security Issues'',
@@ -683,6 +898,10 @@ Docker Image Insecurity, \\ \url{https://titanous.com/posts/docker-insecurity}
 \bibitem{CVE-2014-9357}
 CVE-2014-9357, \\ \url{https://access.redhat.com/security/cve/cve-2014-9357}
 
+\bibitem{gummaraju_desikan_turner}
+G. Jayanth, T. Desikan, Y. Turner, ``Over 30\% of Official Images in Docker
+Hub Contain High Priority Security Vulnerabilities'', BanyanOps, 2015
+
 \bibitem{privileged_accounts_managers}
 What is Privileged Account Management?, \\ \url{https://www.coresecurity.com/blog/what-is-privileged-account-management}
 
@@ -695,7 +914,15 @@ IBM Data Science Experience, \\ \url{https://datascience.ibm.com/}
 \bibitem{ibm_data_sciene_report}
 IBM Data Science Experience: Whole-Cluster Privilege Escalation Disclosure. \\ \url{https://wycd.net/posts/2017-02-21-ibm-whole-cluster-privilege-escalation-disclosure.html}
 
+\bibitem{wiki_dsniff}
+dSniff, \\ \url{https://en.wikipedia.org/wiki/DSniff}
 
+\bibitem{bogaerts_arpspoof}
+ARP spoofing Docker containers, \\ \url{https://dockersec.blogspot.com/2017/01/arp-spoofing-docker-containers_26.html}
+
+\bibitem{to_docker_or_not_to_docker}
+T. Combe, A. Martin, R. Di Pietro. ``To Docker or Not to Docker: A Security
+Perspective'', IEEE Computer Society, 2016
 
 \end{thebibliography}
 
