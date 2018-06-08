@@ -806,6 +806,37 @@ runtime, monitoring containers' activity . We can refer to them as
 
 \section{Best Practices For Docker Deployment}
 
+\subsection{Mandatory Access Control}
+
+A \textit{mandatory access control or MAC} system is a set of rules that define
+what a subject can or can not do in reference to a certain object. Usually the
+operating system plays the role of the policy administrator, while threads and
+processes are the subjects and files, directories, network ports, etc... are the
+objects. When a subject tries to perform an action on an object the OS checks
+all the defined policies and decides if the action can be done or not. A user
+can not override or modify these policies, only the policy administrator
+can\cite{wiki_MAC}. \par Linux offers some kernel security modules, like
+\textit{Security-Enhanced Linux (SELinux)} and \textit{AppArmor}, that can be
+configured using access control security policies to implement mandatory access
+control. Docker supports by default both these two modules and by using them we
+can have an additional extra layer of security, which can result decisive to
+mitigate kernel exploits. \par Docker's default profiles for these Linux kernel
+security modules are very generic, not so restrictive. They usually allow full
+access to the filesystem, network, and all capabilities of Docker containers.
+Moreover the general policy of these default profiles is to protect the host
+from the containers and not also containers from other
+containers\cite{to_docker_or_not_to_docker}. However writing specific profiles
+for each container running on the system  can address such problems, making MAC
+very useful for the enhancement of containers' isolation.
+
+\subsubsection{SELinux}
+
+Security-Enhanced Linux, better known as SELinux, 
+
+\subsubsection{AppArmor}
+
+
+
 \newpage
 
 \section{Experimental Evaluation}
@@ -923,6 +954,9 @@ ARP spoofing Docker containers, \\ \url{https://dockersec.blogspot.com/2017/01/a
 \bibitem{to_docker_or_not_to_docker}
 T. Combe, A. Martin, R. Di Pietro. ``To Docker or Not to Docker: A Security
 Perspective'', IEEE Computer Society, 2016
+
+\bibitem{wiki_MAC}
+Mandatory access control, \\ \url{https://en.wikipedia.org/wiki/Mandatory_access_control}
 
 \end{thebibliography}
 
