@@ -109,7 +109,7 @@ better performances, not having the overhead of the extra layer of the host's
 operating system. It manages directly hardware and the guest's operating system.
 On the contrary hosted hypervisor can be manged in an easier way running as a
 normal computer program on the user's operating
-system\cite{types_of_hypervisor}. \par As said before, the hypervisor needs to
+system\cite{bui_docker_security}. \par As said before, the hypervisor needs to
 run on the user's computer which is defined as \textit{host machine}, while each
 virtual machines is called \textit{guest machine}. It is important to remember
 this terminology because it will be used also in the following, referring to
@@ -815,27 +815,115 @@ processes are the subjects and files, directories, network ports, etc... are the
 objects. When a subject tries to perform an action on an object the OS checks
 all the defined policies and decides if the action can be done or not. A user
 can not override or modify these policies, only the policy administrator
-can\cite{wiki_MAC}. \par Linux offers some kernel security modules, like
-\textit{Security-Enhanced Linux (SELinux)} and \textit{AppArmor}, that can be
-configured using access control security policies to implement mandatory access
-control. Docker supports by default both these two modules and by using them we
-can have an additional extra layer of security, which can result decisive to
-mitigate kernel exploits. \par Docker's default profiles for these Linux kernel
-security modules are very generic, not so restrictive. They usually allow full
-access to the filesystem, network, and all capabilities of Docker containers.
-Moreover the general policy of these default profiles is to protect the host
-from the containers and not also containers from other
-containers\cite{to_docker_or_not_to_docker}. However writing specific profiles
-for each container running on the system  can address such problems, making MAC
-very useful for the enhancement of containers' isolation.
+can\cite{wiki_MAC}. Linux uses by default discretionary access control (DAC),
+restricting access to objects based on the identity of subjects and/or groups to
+which they belong (authorisations are indicated on each file/directory by the
+\textit{rwx} flags). MAC and DAC can works together on a Linux machine, with DAC
+that must be passed before MAC evaluation \par Linux offers some kernel security
+modules, like \textit{Security-Enhanced Linux (SELinux)}, \textit{AppArmor} and
+\textit{Secure Computing Mode (seccomp)}, that can be configured using access
+control security policies to implement mandatory access control. Docker supports
+by default both these two modules and by using them we can have an additional
+extra layer of security, which can result decisive to mitigate kernel exploits.
+\par Docker's default profiles for these Linux kernel security modules are very
+generic, not so restrictive. They usually allow full access to the filesystem,
+network, and all capabilities of Docker containers. Moreover the general policy
+of these default profiles is to protect the host from the containers and not
+also containers from other containers\cite{to_docker_or_not_to_docker}. However
+writing specific profiles for each container running on the system can address
+such problems, making MAC very useful for the enhancement of containers'
+isolation.
 
 \subsubsection{SELinux}
 
-Security-Enhanced Linux, better known as SELinux, 
+Security-Enhanced Linux, better known as SELinux, is a Linux kernel security
+module created in 2003 and used to develop a mandatory access control system.
+With SELinux each component of our operating system has a \textit{label}
+(SELinux is often known as a labelling system): process, files, directories,
+devices, network port, etc... are labelled. To achieve mandatory access control
+we have to write rules that control the access of a subject label on an object
+label. By default everything is deny, writing policies we can allow what we
+need. \par Using SELinux with Docker allows to create access policies that can
+increase containers isolation. To run Docker with SELinux we must at first
+install such kernel module on our host, then we have to assign labels
+accordingly to the policy that we want to create. For example we can assign
+different security context to some host's file and Docker containers, in order
+to prevent the lasts from accessing to the firsts. Docker has to be launched
+with the \textit{--selinux-enabled} flag to start it with. \par SELinux is a
+very powerful tool that allows to have a great control over the system, through
+its high granularity access policies and all its many configurations. At the
+same time its fine-grained policy maker system makes it very difficult and
+complex to maintain. For this reason many times other MAC tools are preferred.
 
 \subsubsection{AppArmor}
 
+AppArmor is another Linux kernel security module based on mandatory access
+control like SELinux. It offers the possibility to restrict programs'
+capabilities with per-program profiles. The system administrator can create and
+load a security profile into a single program, this makes AppArmor simpler to
+use than SELinux and this is often the reason why it is preferred over it.
+AppArmor can be used in two different modes:
+\begin{itemize}
+  \item \textit{Enforcement mode}, where the defined policies are followed and
+  the access restricted according to them; 
+  \item \textit{Complain/learning mode}, where the defined policies are not
+  followed, but each violation is logged for debugging.
+\end{itemize}
+\par We can load our pre-configured AppArmor profile with Docker at launch time,
+if our host supports such kernel security module. The profile is loaded directly
+into the container in enforcement mode. If no profile is specified Docker uses
+its default one, which denies the access only to few filesystems on the host
+\cite{bui_docker_security}. AppArmor profiles are simple text files where access
+control for capabilities and networking can be specified and rules for denying
+access to certain objects can be specified. Such rules can be referred to
+various access controls, denying or allowing a subject to perform certain
+actions on objects like read, write, memory map as executable, file locking,
+creation of hard links, etc... Security profiles can be saved in
+/etc/apparmor.d/ and they can be loaded into a container using the flag
+\textit{-security-opt="apparmor:profile\_name"} with the Docker run command. 
 
+\bigbreak\textbf{LiCShield}\bigbreak 
+
+\textit{LiCShield}\cite{licshield} is an open-source tool that generates
+AppArmor profiles by following the behaviour of the Docker daemon during the
+execution of the build and run commands. The tool was presented at first only
+for LXC with the paper "Security hardening of Linux containers and their
+workloads"\cite{licshield_paper}, then it was adapted to work also with Docker.
+\par LiCShield works starting from a given Docker image, it traces the execution
+of the related container, collecting the information about the performed
+operations, their resources and required permissions. From the information
+retrieved LiCShield generates at the end a specific AppArmor profile for the
+analysed container. 
+
+\bigbreak\textbf{Bane}\bigbreak 
+
+\textit{Bane}\cite{bane_jesse_frazelle} is an open-source tool created by Jessie Frazelle, a former
+Software Engineer at Docker Inc., with the aim to simplify and speedup the creation of
+AppArmor profiles. It basically generates AppArmor profiles from YAML
+specification files. Such YAML files follow a very simple syntax where three
+sections are present:
+\begin{itemize}
+  \item \textit{Filesystem}, where we can define the type of actions that can be
+  performed on a certain path. Actions include "Read only", "Log on write",
+  "Allow execution", "Deny execution", "Write", etc...
+  \item \textit{Capabilities}, where a whitelist of the allowed capabilities is
+  defined. 
+  \item \textit{Network}, where allowed protocols and network policies are
+  defined.
+\end{itemize}
+Bane installs directly the generated profiles inside AppArmor's directory.  
+
+\subsubsection{seccomp}
+
+Secure Computing Mode, better known as seccomp, is a Linux kernel security
+module that acts as a firewall for system calls. Writing a profile for seccomp
+it can be possible to restrict the use of syscalls using a whitelist approach.
+Docker's default profile for this feature disables around forty system calls,
+not allowing a container to call them , restricting its privileges. It is
+possible to write specific security profiles for our containers, however such
+practice is discouraged due to the difficulty to write and maintain seccomp's
+profiles. seccomp's profiles can be used within a container using the flag
+\textit{-security-opt="path\_to\_seccomp\_profile"} with the Docker run command.
 
 \newpage
 
@@ -852,7 +940,7 @@ Security-Enhanced Linux, better known as SELinux,
 \bibitem{wikipedia_virtualization}
 "Virtualisation" Wikipedia Page,\\ \url{https://en.wikipedia.org/wiki/Virtualization}
 
-\bibitem{types_of_hypervisor}
+\bibitem{bui_docker_security}
 Thanh Bui,
 ``Analysis of Docker Security'',
 January 2015
@@ -946,17 +1034,27 @@ IBM Data Science Experience, \\ \url{https://datascience.ibm.com/}
 IBM Data Science Experience: Whole-Cluster Privilege Escalation Disclosure. \\ \url{https://wycd.net/posts/2017-02-21-ibm-whole-cluster-privilege-escalation-disclosure.html}
 
 \bibitem{wiki_dsniff}
-dSniff, \\ \url{https://en.wikipedia.org/wiki/DSniff}
+"dSniff" Wikipedia Page, \\ \url{https://en.wikipedia.org/wiki/DSniff}
 
 \bibitem{bogaerts_arpspoof}
 ARP spoofing Docker containers, \\ \url{https://dockersec.blogspot.com/2017/01/arp-spoofing-docker-containers_26.html}
 
 \bibitem{to_docker_or_not_to_docker}
-T. Combe, A. Martin, R. Di Pietro. ``To Docker or Not to Docker: A Security
+T. Combe, A. Martin, R. Di Pietro, ``To Docker or Not to Docker: A Security
 Perspective'', IEEE Computer Society, 2016
 
 \bibitem{wiki_MAC}
-Mandatory access control, \\ \url{https://en.wikipedia.org/wiki/Mandatory_access_control}
+"Mandatory access control" Wikipedia Page, \\ \url{https://en.wikipedia.org/wiki/Mandatory_access_control}
+
+\bibitem{bane_jesse_frazelle}
+bane, \\ \url{https://github.com/genuinetools/bane}
+
+\bibitem{licshield}
+LiCShield, \\ \url{https://github.com/2m4t/LiCShield}
+
+\bibitem{licshield_paper}
+M. Mattetti, A. Shulman-Peleg, Y. Allouche, A. Corradi, S. Dolev, L. Foschini,
+``Security hardening of Linux containers and their workloads'', 2015
 
 \end{thebibliography}
 
