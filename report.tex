@@ -28,6 +28,8 @@
 % phantom space (for abbreviations)
 %
 \usepackage{xspace}
+
+\usepackage{hyperref}
 %
 % Definition of margins
 %
@@ -76,9 +78,63 @@
 
 \section{Introduction}
 
+Docker is one of the most disruptive technology of the last years. It has almost
+``revolutionised'' the software industry and the method of developing new
+applications. As stated on the company's site \cite{docker_numbers} there are
+more than twenty-nine billion downloads of Docker containers and the project
+itself has received more than thirty-two thousands stars on GitHub. \par Docker
+promotes a ``LEGO approach'' for the development of new software applications,
+in which the Docker images play the role of the basic bricks on which Docker
+containers are instantiated and started. Such model allows an easier and faster
+development, facilitating the reuse and sharing of already developed software.
+Over time it has taken over other virtualisation technologies like hypervisors,
+thanks to its being lighter and easier to use. \par The goal of this research is
+to analyse Docker from the point of view of the computer security. It starts
+from other studies on the same topic to explore what security threats
+are hiding behind Docker's ease and speed of use. Moreover, it derives from such
+menaces a list of security best practice to follow during the use of Docker
+containers, analysing different tools and solutions proposed by Docker itself
+and other companies. 
+
+\subsection{Limitations}
+
+This research focuses solely on Docker. It does not provide a security analysis
+of other tools that are often used along with it, like Kubernetes
+\cite{kubernetes}. The latter is an open-source orchestration tool, which is
+used to handle more easily the deployment, the scaling and the management of
+containers, including also Docker containers. \par Moreover, this work wants to
+propose a security analysis on the current status of Docker. Such software
+application is constantly developing and new versions are released very
+frequently. For this reason many scientific paper have not been used, because
+they refer to obsolete versions of Docker.
+
+\subsection{Structure Of The Work}
+
+The study is divided as follows:
+\begin{itemize}
+  \item Section \hyperref[sec:docker_overview]{2} starts with an excursus
+  concerning the most important technologies used to virtualise computational
+  resources, from hypervisors to containers. Then it focuses on Docker,
+  introducing it and describing its architecture and the most important
+  components involved in its use. 
+  \item Section \hyperref[sec:docker_security_threats]{3} defines the
+  attack surface of the Docker containers. It analyses different security
+  threats, providing for each of them a description and an example of a real
+  attack. 
+  \item Section \hyperref[sec:best_practices_for_docker_deployment]{4} starts
+  from the previous section to derive best practices for the deployment of
+  Docker containers. It analyse different configurations and tools able to
+  mitigate the security threats previously described.
+  \item Section \hyperref[sec:practical_evaluation]{5} takes in analysis two of
+  the tools introduced as best practice to follow. It shows a case of use for
+  each of them, providing a practical example of how to use them from their
+  installation to their evaluation.
+\end{itemize}
+
 \newpage
 
 \section{Docker Overview}
+\label{sec:docker_overview}
 
 In computer science, the term \textit{virtualisation}
 \cite{wikipedia_virtualization} is referred to the creation of virtual
@@ -91,7 +147,7 @@ many years the state of the art of virtualisation, being used in both consumer
 and enterprise contexts. In the last years a new technology, based on
 \textit{containers}, has started to gain more attention specially thanks to its
 advantages in terms of acceleration of the development cycle and possibility to
-thicken applications on servers. \textit{Docker} is an open source container
+thicken applications on servers. \textit{Docker} is an open-source container
 technology which became popular thanks to its ease of use, that allows to
 create and manage containers in an easy way. \par In this section I give an
 overview of the technologies mentioned above, with a particular focus on Docker,
@@ -274,7 +330,7 @@ platform-as-a-service (PaaS) company, later renamed to \textit{Docker, Inc}.
 Solomon Hyckes \cite{solomon_hyckes_wiki} was the leader of the project, that
 was at first developed with other \textit{dotCloud}'s engineers, like Andrea
 Luzzardi and Francois-Xavier Bourlet. The project went public, as said before,
-during 2013's PyCon conference and it was released as open source software
+during 2013's PyCon conference and it was released as open-source software
 during the same year. Always during 2013, \textit{Docker} distanced itself from
 Linux Containers, replacing them with a new execution environment (starting from
 version 0.9), \textit{libcontainer}.\par \textit{Docker} represented a turning
@@ -332,13 +388,13 @@ can be distinguished \cite{docker_architecture}
 \label{sec:docker_object}
 
 Docker's workflow includes the interaction with many special purpose components
-created and managed by \textbf{containerd}:
+created and managed by \textit{dockerd}:
 \begin{itemize}
   \item \textbf{IMAGES} are the basic components involved in the creation of a
   Docker's container, they include all the instructions that the daemon has to
   follow in order to run a container. An image can be created from scratch or it
   can be based on already existing images (for example on the image of
-  \textit{nginx} if we want to create a web server) where other needed
+  \textit{nginx} if we want to create a web server) where the other needed
   components are installed. \par A \textit{Dockerfile} is a special file that
   follows a very simple syntax, which includes all the steps that must be
   followed in order to create an image. Each instruction represents a layer in
@@ -356,7 +412,10 @@ created and managed by \textbf{containerd}:
   Developers' images on Docker Hub are by default public, only the paid accounts
   can upload private images. These images take a standard name, that has the
   form ``developer\_uid/repository\_name''. \textit{Docker, Inc.} provides some
-  official images, called simply ``repository\_name''.  
+  official images. \par A Docker image can also contain a \textit{tag}, that is
+  just an ID that conveys information about a specific image version/variant. A
+  tag can be added to an image using the command \textit{docker tag}. If no tag
+  is specified, the \textit{latest} tag is assigned by default.  
   \item \textbf{CONTAINERS} represent the running instances of images. The
   relationship between images and containers could be compared to the
   relationship between classes and objects in an object-oriented programming
@@ -428,6 +487,7 @@ most common use cases for Docker are mainly three:
 \newpage
 
 \section{Docker's Security Threats}
+\label{sec:docker_security_threats}
  
 In this section I analyse the most important security threats for a Docker
 system. For each possible threat I describe its characteristics and how it could
@@ -599,19 +659,19 @@ not the privileges to access it, we can still call
 
 \subsubsection{Poisoned Images}
 
-As said in \ref{sec:docker_object}, Docker images represent
-one of the most fundamental building blocks for a container. If an attacker
-obtains to make his images to run, the host and all its containers are seriously
-at risk. \par Container images are claimed to be downloaded and verified by
-default by Docker, thanks to the presence of a signed manifest inside the
-image. In such mechanism however Docker does not verify the image's checksum
-from the manifest. In this way an attacker could provide his \textit{poisoned
-images} with some virus, together with a signed manifest. \par Docker fetches
-and unpacks a container image in just one step without verification, using the
-command \textit{docker pull}. Jonathan Rudenberg explained in a post
-\cite{docker_image_insecurity} on his blog how the process of downloading a
-Docker image can be extremely insecure. Images are downloaded using HTTPS and
-then they go immediately through a processing pipeline inside the Docker daemon:
+As said in \ref{sec:docker_object}, Docker images represent one of the most
+fundamental building blocks for a container. If an attacker obtains to make his
+images to run, the host and all its containers are seriously at risk. \par
+Container images are claimed to be downloaded and verified by default by Docker,
+thanks to the presence of a signed manifest inside the image. In such mechanism
+however Docker does not verify the image's checksum from the manifest. In this
+way an attacker could provide his \textit{poisoned images} with some virus,
+together with a signed manifest. \par Docker fetches and unpacks a container
+image in just one step without verification, using the command \textit{docker
+pull}. Jonathan Rudenberg explained in a post \cite{docker_image_insecurity} on
+his blog how the process of downloading a Docker image can be extremely
+insecure. Images are downloaded using HTTPS, but then they go immediately
+through a processing pipeline inside the Docker daemon:
 \bigbreak\centerline{decompress $\,\to\,$ tarsum $\,\to\,$ unpack}\bigbreak This
 pipeline, even if it is functional, is insecure. The reason lies in the fact
 that the not trusted input is processed before its verification. A compromised
@@ -636,7 +696,7 @@ attest their security. On the one hand we have seen how images could be
 \textit{poisoned} by an attacker, on the other hand even if our images are not
 compromised it does not mean that they are safe. It is important to make
 sure that the images at the base of our running containers are updated, not
-containing any known vulnerabilities. An outdated image can be affected by a
+containing any known vulnerabilities.  An outdated image can be affected by a
 series of security threats that were already fixed in an updated version of the
 same image. \par A study by Gummaraju, Desikan, and Turner at BanyanOps
 demonstrated how about more than the 30\% of the official repositories present
@@ -768,7 +828,7 @@ All the threats analysed in the former sections regard the launch-time of
 containers. Kernel exploits, denial-of-service, container breakouts, ... are
 all security threats that can be faced before running our containers. We can
 refer to these as \textit{static aspects} of Docker security. Such threats, as
-we will see in the next chapter, can all be mitigated following some precautions
+we will see in the next section, can all be mitigated following some precautions
 during the creation of the images that we will run, using special configurations
 and ad-hoc policies or tools.\par However container's attack surface is not
 limited to such aspects, we must also consider:
@@ -813,20 +873,25 @@ runtime, monitoring containers' activity . We can refer to them as
 \newpage
 
 \section{Best Practices For Docker Deployment}
+\label{sec:best_practices_for_docker_deployment}
 
-I started from the security threats analysed in the previous section to define
-some possible practices to follow during the deployment of Docker containers. In
-this section I lists these best practices. Not all of them refer to the security
-threats previously analysed, some are generic practices that can be useful in
-order to increase the security of the system. \par The suggested tools are
-almost always either provided by Docker itself or they are open-source and free,
-I deliberately avoid to propose commercial and closed-source software because
-they are often more difficult to analyse and test. Most of the practices are
-present in literature or directly suggested in the Docker's documentation. In
-particular I have often referred to Gianluca Arbezzano's ``Docker Security -
-Play Safe'' \cite{arbezzano_play_safe} and to Adrian Mouat's ``Using Docker.
-Developing and Deploying Software with Containers'' \cite{mouat_using_docker} to
-find the best practices for security enhancement in Docker. 
+As seen in the previous section, the ease of use of Docker actually hides a
+series of security threats. In this section I will start right from these
+security threats previously analysed in order to list several best practices
+that can be followed during the deployment of Docker containers. The aim of
+using such practices is to increase the security of a Docker system, trying not
+to complicate the Docker user experience. Most of the practices that I will
+introduce refer directly to specific attacks previously described, others are
+generic practices that can be useful for increasing the security of the system.
+\par The suggested tools are almost always either provided by Docker itself or
+they are open-source and free, I deliberately avoid to propose commercial and
+closed-source software because they are often more difficult to analyse and
+test. Most of the practices are present in literature or directly suggested in
+the Docker's documentation. In particular I have often referred to Gianluca
+Arbezzano's ``Docker Security - Play Safe'' \cite{arbezzano_play_safe} and to
+Adrian Mouat's ``Using Docker. Developing and Deploying Software with
+Containers'' \cite{mouat_using_docker} to find the best practices for security
+enhancement in Docker. 
 
 \subsection{Mandatory Access Control}
 
@@ -960,7 +1025,7 @@ security enhancements.
 \subsubsection{grsecurity}
 
 \textit{grsecurity} \cite{wiki_grsecurity} is a collection of security features
-for the Linux kernel. It is developed by Open Source Security and it can be used
+for the Linux kernel. It is developed by open-source Security and it can be used
 only by its paid subscribers, despite being free from 2001 (when it was first
 released) to 2005.\par grsecurity offers different components that add safety
 checks, useful to defeat many exploits. Among these components the most
@@ -1185,8 +1250,8 @@ a good example of how we should design our images using as few layers and
 features as possible. \par To analyse our newly created image we can use
 different tools, in the next paragraphs I will introduce two of the most used.
 Scan an image after a build can be a great way to avoid having vulnerabilities
-and exposures. For example it could happen to have an imagine that contains
-OpenSSL with the heartbleed vulnerability still present, the analysis phase
+and exposures. For example it could happen to have an image that contains
+OpenSSL with the \textit{heartbleed} vulnerability still present, the analysis phase
 could notify us of such a problem in order to solve it. 
 
 \subsubsection{Docker Security Scanning}
@@ -1194,7 +1259,7 @@ could notify us of such a problem in order to solve it.
 \textit{Docker Security Scanning} \cite{docker_security_scanning} is a tool
 developed by Docker Inc. and available as an add-on on both Docker Cloud and
 Docker Hub. It allows to scan private and official repositories, searching for
-known vulnerabilities. At the moment this tool is not open source and it is
+known vulnerabilities. At the moment this tool is not open-source and it is
 available only to paid subscribers. \par Docker Security Scanning uses
 \textit{CVE} database as source of information to know the latest discovered
 vulnerabilities. Common Vulnerabilities and Exposures
@@ -1215,10 +1280,10 @@ report.
 
 \subsubsection{Clair}
 
-\textit{Clair} \cite{clair} is an open source tool developed by CoreOS. Like
+\textit{Clair} \cite{clair} is an open-source tool developed by CoreOS. Like
 Docker Security Scanning, it allows to perform a static analysis of our Docker
 images, searching for known vulnerabilities. As opposed to Docker Security
-Scanning, it is a free service. \par Clair is written in Golang and it offers a
+Scanning it is a free service. \par Clair is written in Golang and it offers a
 set of HTTP APIs, that can be used by a client to pull, push and analyse images.
 Its implementation is based on the use of a database, where are stored all the
 known vulnerabilities and all the features present in our images. Clair uses
@@ -1241,7 +1306,7 @@ our application container:
 \subsection{Image Verification}
 
 Most of the time Docker is used downloading third-party images and not creating
-your own images from scratch. As seen in the previous chapter one of the risk of
+your own images from scratch. As seen in the previous section one of the risk of
 this practice is to come across poisoned images. For this reason some
 precautions must be taken before running the \textit{docker pull} command. \par
 Red Hat suggests \cite{docker_image_insecurity} different ways to protect
@@ -1276,7 +1341,7 @@ regular Docker workflow, indeed it does not require special commands to be used.
 All the normal commands can be still used, with the exception that they only
 work with signed content. \par Docker Content Trust is based on \textit{The
 Update Framework} and \textit{Notary} to provide both the integrity and the
-freshness of the content. The Update Framework or TUF is an open source
+freshness of the content. The Update Framework or TUF is an open-source
 framework designed to make the update life-cycle safe. Notary, instead, is a
 utility for securely publishing and verifying content that is distributed over
 any insecure network. The entire mechanism of Docker Content Trust is based on
@@ -1481,6 +1546,16 @@ containers. Some of these can not be always used, depending heavily on the needs
 of the application we are developing. In this paragraph I have listed some of
 them:
 \begin{itemize}
+  \item \textit{Encrypt communication with the Docker daemon socket}: The Docker
+  daemon runs by default via a non-networked Unix socket. In some situations it
+  may be useful to run it using an HTTP socket, so that it could be reachable
+  from the outside. In this case it is important to guarantee that all the
+  communications towards the daemon are encrypted using TLS, preventing
+  unauthorised clients from communicating with it. TLS can be enabled specifying
+  the \textit{tlsverify} flag when running the Docker daemon and client,
+  together with the \textit{tlscacert} flag to point to a trusted CA
+  certificate. In this way the daemon will only accept clients authenticated by
+  a certificate signed by that CA.
   \item \textit{Defang SETUID and SETGID binaries}: Set User ID (setuid) and
   Set Group ID (sgid) are two particular permission that can be set on binaries.
   Thanks to these permissions such binaries are always executed with the
@@ -1536,27 +1611,285 @@ them:
 
 \newpage
 
-\section{Experimental Evaluation}
+\section{Practical Evaluation}
+\label{sec:practical_evaluation}
 
+As discussed in the two previous sections, using Docker without any precaution
+can lead to serious risks for the security of our system. For this reason,
+having a proactive approach is a necessary condition if we want to reduce the
+attack surface of Docker containers. In the previous section I have defined some
+best practices which can be followed for this purpose. In this section I will
+focus on two of the critical threats previously analysed, demonstrating how they
+can be easily mitigated just taking some precautions. \par This section focuses
+on the practical use of the tools previously analysed, in order to try to prove
+how the ease of use of Docker is not affected by them. 
 
+\subsection{Image Analysis}
+
+In this paragraph we will focus on the \textit{analysis phase} of a Docker
+image. In the previous section I have introduced \textit{Clair} as an open
+source tool that can be used to perform a static analysis of a Docker image, now
+we will see how it can be used in practice. \par The Docker image that we will
+analyse is called \textit{vaas-cve-2014-0160} \cite{hmlio}, it is present on the
+Docker Hub, provided by the user \textit{hmlio}. It is a simple image created
+for demonstration purposes, which is based on Debian Wheezy, using a version of
+\textit{openssl} vulnerable to \textit{heartbleed} (CVS-2014-0160). \par As said
+we will use Clair to perform the image analysis. It can be used directly
+querying its API or through a third-party client. We will use the former method.
+There are many clients developed for this purpose that can be easily integrated
+with Clair. In particular we will use \textit{Clair Scanner}
+\cite{clair-scanner}, that is an open-source software written in Go, that can be
+used together with Clair to speed up the analysis process.
+
+\subsubsection{Clair Installation}
+
+For this evaluation a MacBook Pro Retina Early 2013 with macOs 10.13.5 will be
+used. Clair itself can be launched as a container, together with a containerised
+database, that will be used to store information about the known vulnerabilities
+and the analysed image layers. Starting Clair from scratch requires a huge
+amount of time to fill up the database with the vulnerabilities information. For
+this reason the developers of Clair Scanner have created a Docker image of Clair
+that is updated daily, speeding up the launch process of a standalone Clair
+server. They also provide the image of a PostgreSQL database that can be used to
+store information about the Docker images that we want to analyse. To start
+these two containers we can use the following commands: 
+\begin{lstlisting}[language=bash,breaklines]
+  docker run -p 5432:5432 -d --name db arminc/clair-db:2018-07-01
+  docker run -p 6060:6060 --link db:postgres -d --name clair arminc/clair-local-scan:v2.0.1
+\end{lstlisting}
+The first command can be modified to use a newer version of the database, it is
+sufficient to change the tag of the used Docker image to the present day's date.
+\par At this point we should have the two containers up and running, as we can
+verify using the command ``\textit{docker container ls}'' as shown in
+\myfig{\ref{fig:clair_running}}: 
+
+\begin{figure}[ht!]
+  \centerline{\includegraphics[width=1\textwidth]{clair_running.png}}
+  \caption{Clair successfully running}
+  \label{fig:clair_running}
+  \end{figure}
+
+\subsubsection{Use Of Clair Scanner}
+
+To install Clair Scanner we need to install first Go and \textit{dep}, that is a
+dependencies manager for this programming language. The scanning tool can be
+downloaded directly from the GitHub page of the project and installed using the
+provided Makefile, with the command ``\textit{make ensure \&\& make build}''.
+\par Clair Scanner communicates directly with the Clair server previously
+launched to test our containers for vulnerabilities. It is also possible to
+specify a whitelist containing allowed vulnerabilities. To analyse a Docker
+image we can use the command ``\textit{clair-scanner --ip OUR\_LOCAL\_IP
+IMAGE\_NAME}''. In our case it will be:
+\begin{lstlisting}[language=bash,breaklines]
+  ./clair-scanner --ip 10.1.22.128 hmlio/vaas-cve-2014-0160 >> /Users/Carmine/Desktop/docker_scan_report.txt
+\end{lstlisting}
+The result of such command is showed in \myfig{\ref{fig:clair_scanner_cmd}}. It
+is possible to see how each layer of the Docker image is pushed to the Clair
+server, where it is analysed. In this case the image contains 234 known
+vulnerabilities. Such commands produces also a report of the vulnerabilities
+found, but in this case I have appended it to a new file, that I will analyse in
+the next paragraph. To specify a whitelist such command must be launched with
+the \textit{--whitelist=""} option, specifying the path to the whitelist file.
+Such file can be a simple YAML file where the allowed vulnerabilities can be
+specified for each single image or for all the Docker images to analyse.   
+
+\begin{figure}[ht!]
+  \centerline{\includegraphics[width=1\textwidth]{clair_scanner_cmd.png}}
+  \caption{Clair Scanner Results}
+  \label{fig:clair_scanner_cmd}
+  \end{figure}
+
+\subsubsection{Results}
+
+As stated in the previous paragraph, Clair Scanner produces a report of the
+analysed image. Such report lists all the discovered vulnerabilities, ordering
+them by their CVE severity. For each vulnerability is reported its CVE
+identification code, the package where it was found together with the package
+version and a description of the vulnerability itself. The first vulnerabilities
+listed in the report of our analysed Docker image are showed in
+\myfig{\ref{fig:clair_report}}.
+
+\begin{figure}[ht!]
+  \centerline{\includegraphics[width=1\textwidth]{clair_report.png}}
+  \caption{Clair Scanner Report}
+  \label{fig:clair_report}
+  \end{figure}
+
+We analysed the Docker image \textit{vaas-cve-2014-0160} because it contains a
+version of \textit{openssl} vulnerable to \textit{heartbleed}. Clair Scanner
+reports such vulnerability as can be seen in \myfig{\ref{fig:clair_heartbleed}}.
+
+  \begin{figure}[ht!]
+    \centerline{\includegraphics[width=1\textwidth]{clair_heartbleed.png}}
+    \caption{Clair Scanner Report}
+    \label{fig:clair_heartbleed}
+    \end{figure}
+
+\subsection{Container Monitoring}
+
+In the previous sections we have divided Docker's security concerns into two
+different types: static and dynamic. Regarding the latter we have seen how these
+are related to the runtime activity of a Docker container, for example a
+vulnerability not yet patched or a bug in our containerised application. \par As
+seen in the previous section, the use of log mechanisms or specific tools for
+monitoring container's activities can help in these contexts. In particular we
+have seen how Docker offers a native system for logging and how third-party
+software like Sysdig Falco can be used to actively monitor a Docker container.
+We will focus on this last application, showing how it can be used in practice
+to detect attacks. 
+
+\subsubsection{Setup}
+
+For this practical evaluation we will use a virtual machine with Debian 9.4 and
+Linux Kernel 4.9.0. Falco's documentation can be found on its GitHub page
+\cite{falco_doc}. It can be easily installed running the following command as
+root:
+\begin{lstlisting}[language=bash,breaklines]
+curl -s https://s3.amazonaws.com/download.draios.com/stable/install-falco | sudo bash
+\end{lstlisting}
+Then it can be launched simply using the \textit{falco} command on the
+terminal. \par It can be configured modifying the
+\textit{/etc/falco/falco.yaml}. In particular we set it up in order to print all
+the events found on \textit{/events.txt} and not on the \textit{STDOUT}, adding
+the following code snippet to the configuration file:
+\begin{lstlisting}[language=bash,breaklines]
+syslog_output:
+  enabled: false
+
+file_output:
+  enabled: true
+  filename: /var/log/events.txt
+\end{lstlisting}
+\par As said in the first section of this research, despite a single Docker
+container can be used to run multiple processes, it is a good practice to
+execute just one process per container. In this way there is a better separation
+of concerns, moreover this allows to know exactly which process is running
+inside a certain container. This last statement can be used to enhance the
+security of our system. In most attacks, in fact, the attacker that takes
+control of a Docker container launches other processes inside the same
+container. Using Falco we can define a rule that can be used to warn in case a
+process different from the one initially defined is executed inside our
+container. We can append our rule to the file
+\textit{/etc/falco/falco\_rules.yaml}:
+
+\begin{lstlisting}[language=bash,breaklines]
+- rule: Unauthorised process
+  desc: A process different from the defined one is spawned
+  condition: spawned_process and container and container.image startswith nginx and not proc.name in (nginx)
+  output: Unhautorized process (%proc.cmdline) running in (%container.id)
+  priority: WARNING
+\end{lstlisting}
+
+\textit{spawned\_process}, \textit{container}, \textit{container.image
+startswith} and \textit{proc.name in} are all macros defined by default in
+Falco. Such conditions detect a new process that is launched in a nginx Docker
+image and that is not nginx itself. Such rule also print out the name of the new
+process and the ID of the involved container.
+
+\subsubsection{Detection}
+
+As anticipated in the definition of the Falco's rule, the Docker image that we
+will use is nginx. It is one of the most popular Docker image on the Docker Hub
+and it can be used to create a web server, a load balancer, a reverse proxy, ...
+In our case we will just use it to launch a process from its container's
+terminal. It can be launched using the command:
+
+\begin{lstlisting}[language=bash,breaklines]
+  docker run -d -P  --name falco_test nginx
+\end{lstlisting}
+
+We can verify that such container has been launched using the \textit{docker ps}
+command as can be seen in \myfig{\ref{fig:nginx_launched}}, where it is also
+reported the ID of the container.
+
+\begin{figure}[ht!]
+  \centerline{\includegraphics[width=1\textwidth]{nginx_launched.png}}
+  \caption{nginx container successfully running}
+  \label{fig:nginx_launched}
+  \end{figure}
+
+As said before, Falco can be simply launched using the \textit{falco} command.
+It will automatically read the new configuration and the new defined rule from
+\textit{/etc/falco/falco.yaml} and \textit{/etc/falco/falco\_rules.yaml}. At
+this point it will be sufficient to launch from the nginx's container any
+command to trigger Falco. In our case we will run the \textit{ls} command via: 
+\begin{lstlisting}[language=bash,breaklines]
+  docker exec -it falco_test ls
+\end{lstlisting}
+
+We can see the generated warning checking the \textit{/var/log/events.txt} file
+as showed in \myfig{\ref{fig:falco_warn}}.
+
+\begin{figure}[ht!]
+  \centerline{\includegraphics[width=1\textwidth]{falco_warn.png}}
+  \caption{Warning from Falco}
+  \label{fig:falco_warn}
+  \end{figure}
 
 \newpage
 
 \section{Conclusions}
+\label{sec:conclusions}
+
+This research work focused on the security of Docker, in order to analyse this
+software program which, despite being still ``young'', has had a great success
+in the software industry. Several security threats were identified among those
+described in literature, providing where possible examples of real attacks to
+show how such threats are not only theoretical but also practical. These menaces
+range in different field of the computer system security, from the security of
+the kernel to that of the network, from aspects strictly related to the use of
+Docker, such as the creation and use of images, to more general aspects
+concerning the development of network services, like the management of secrets.
+For each security threat one or more best practices were identified, with the
+aim of creating a workflow to follow when deploying a new Docker container. Such
+practices are based on the use of special configurations and ad-hoc policies or
+tools, in order to increase the security of a Docker environment. Two of these
+tools were also tested, demonstrating how their use can mitigate some of the
+analysed threats. \par The main thesis of this research was that it is true that
+Docker has become popular thanks to its ease of use, which has sped up the
+development time of an application for many programmers, but it is also true
+that such simplicity hides behind itself security risks. In support of this
+thesis many security threats were analysed, showing how a simple \textit{docker
+run} is not enough to guarantee the safety of the environment. At the same time
+it is important to remark the fact that Docker is a project with relatively few
+years of life and that its development is proceeding very quickly, solving in
+each version released several bugs and mitigating various security threats. It
+is also good to highlight the fact that Docker is an open-source project, so
+anyone can contribute to its code, making it safer and speeding up its
+development. Its popularity has also pushed several third-party developers to
+create specific tools for it, as the ones analysed in this research. Moreover
+all the best practices introduced in this work have little effect on the ease of
+use of Docker, just asking for more attention and time from a developer in order
+to have more security in his system. \par Docker has represented in these years
+a real ``phenomenon'' in the software industry, being quickly adopted by many
+companies, startups and independent programmers to sped up their development
+process. Its use carries with it various security risks that should not be
+ignored, but rather prevented following good practices such as those proposed in
+this research. The continuous release of new tools by Docker itself and also by
+third-party companies in order to address such security threats helps however to
+understand the attention placed on this software program. In particular if these
+new tools are able to improve the safety of Docker containers without affecting
+their ease of use, the use of Docker can only continue to grow.
 
 \newpage
 
 \begin{thebibliography}{99}
 
+\bibitem{docker_numbers}
+About Docker, \url{https://www.docker.com/company}
+
+\bibitem{kubernetes}
+Kubernetes, \url{https://kubernetes.io/}
+
 \bibitem{wikipedia_virtualization}
-"Virtualisation" Wikipedia Page,
+Virtualisation,
 \url{https://en.wikipedia.org/wiki/Virtualization}
 
 \bibitem{bui_docker_security}
 Thanh Bui, ``Analysis of Docker Security'', January 2015
 
 \bibitem{wikipedia_LXC}
-"LXC" Wikipedia Page, \url{https://en.wikipedia.org/wiki/LXC}
+LXC, \url{https://en.wikipedia.org/wiki/LXC}
 
 \bibitem{red_hat_introduction_to_namespaces}
 Introduction to Linux Containers,
@@ -1577,11 +1910,11 @@ The future of Linux Containers, PyCon 2013,
 CI/CD in Docker, \url{https://www.docker.com/use-cases/cicd}
 
 \bibitem{solomon_hyckes_wiki}
-"Solomon Hikes" Wikipedia Page,
+Solomon Hikes,
 \url{https://en.wikipedia.org/wiki/Solomon_Hykes}
 
 \bibitem{docker_history_wiki}
-"Docker History" Wikipedia Page,
+Docker History,
 \url{https://en.wikipedia.org/wiki/Docker_(software)#History}
 
 \bibitem{docker_architecture}
@@ -1753,6 +2086,15 @@ eBPF, Microservices, Docker, and Cilium: From Novice to Seasoned,
 
 \bibitem{cilium_github}
 Cilium, \url{https://github.com/cilium/cilium}
+
+\bibitem{hmlio}
+hmlio/vaas-cve-2014-0160, \url{https://hub.docker.com/r/hmlio/vaas-cve-2014-0160/}
+
+\bibitem{clair-scanner}
+Clair Scanner, \url{https://github.com/arminc/clair-scanner}
+
+\bibitem{falco_doc}
+Sysdig Falco Documentation, \url{https://github.com/draios/falco/wiki}
 
 \end{thebibliography}
 
