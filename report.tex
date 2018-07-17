@@ -85,16 +85,19 @@ more than twenty-nine billion downloads of Docker containers and the project
 itself has received more than thirty-two thousands stars on GitHub. \par Docker
 promotes a ``LEGO approach'' for the development of new software applications,
 in which the Docker images play the role of the basic bricks on which Docker
-containers are instantiated and started. Such model allows an easier and faster
-development, facilitating the reuse and sharing of already developed software.
-Over time it has taken over other virtualisation technologies like hypervisors,
-thanks to its being lighter and easier to use. \par The goal of this research is
-to analyse Docker from the point of view of the computer security. It starts
-from other studies on the same topic to explore what security threats
-are hiding behind Docker's ease and speed of use. Moreover, it derives from such
-menaces a list of security best practice to follow during the use of Docker
-containers, analysing different tools and solutions proposed by Docker itself
-and other companies. 
+containers are instantiated and started. The contemporary approach to software
+development is often based on the use of third-party code, libraries or
+platforms. Docker has led this concept to the extreme, allowing developers to
+quickly get up and running countless third-party libraries. It allows an easier
+and faster development, facilitating the reuse and sharing of already developed
+software. Over time it has taken over other virtualisation technologies like the
+ones based on the use of hypervisors, thanks to its being lighter and easier to
+use. \par The goal of this research is to analyse Docker from the point of view
+of the computer security. It starts from other studies on the same topic to
+explore what security threats are hiding behind Docker's ease and speed of use.
+Moreover, it derives from such menaces a list of security best practice to
+follow during the use of Docker containers, analysing different tools and
+solutions proposed by Docker itself and other companies. 
 
 \subsection{Limitations}
 
@@ -659,51 +662,60 @@ not the privileges to access it, we can still call
 
 \subsubsection{Poisoned Images}
 
-As said in \ref{sec:docker_object}, Docker images represent one of the most
-fundamental building blocks for a container. If an attacker obtains to make his
-images to run, the host and all its containers are seriously at risk. \par
-Container images are claimed to be downloaded and verified by default by Docker,
-thanks to the presence of a signed manifest inside the image. In such mechanism
-however Docker does not verify the image's checksum from the manifest. In this
-way an attacker could provide his \textit{poisoned images} with some virus,
-together with a signed manifest. \par Docker fetches and unpacks a container
-image in just one step without verification, using the command \textit{docker
-pull}. Jonathan Rudenberg explained in a post \cite{docker_image_insecurity} on
-his blog how the process of downloading a Docker image can be extremely
-insecure. Images are downloaded using HTTPS, but then they go immediately
-through a processing pipeline inside the Docker daemon:
-\bigbreak\centerline{decompress $\,\to\,$ tarsum $\,\to\,$ unpack}\bigbreak This
-pipeline, even if it is functional, is insecure. The reason lies in the fact
-that the not trusted input is processed before its verification. A compromised
-image does not need to run to lead to malfunctions of the system. As stated by
-one blog post from Red Hat \cite{docker_pull_red_hat}, an attacker can
-compromise the system even during the unpack step. For example an issue (now
-solved) exploited a tarball's capacity to perform directory traversal attacks,
-allowing compromised images to override parts of a host file system.
+Docker images represent one of the most fundamental building blocks for a
+container. If an attacker obtains to run his through a tampered image, the host
+and all its containers can be seriously at risk. For this reason the problem of
+ensuring the provenance of an image is of primary importance in the use of
+Docker. \par The term \textit{poisoned image} is referred to an image that has
+been injected with malicious code by an attacker. In a typical attack a
+situation a victim will download such poisoned image through the \textit{docker
+pull} command from a registry. The private registers are those most interested
+in this attack, because very often they are easily exploited due to their weak
+security settings. The \textit{docker pull} command plays a key role in such
+threat, indeed it is used to fetch and unpack a container image in just one
+step. As explained by Jonathan Rudenberg in a post
+\cite{docker_image_insecurity} on his blog, such mechanism and its related
+pipeline, even if functional, can lead to serious security risks. The Docker
+images downloaded via the \textit{docker pull} command go directly through a
+processing pipeline inside the Docker daemon consisting of the following
+operations: \bigbreak\centerline{DECOMPRESS $\,\to\,$ TARSUM $\,\to\,$
+UNPACK}\bigbreak A poisoned image can compromise a system directly during such
+operations, even if the container itself is never run. Moreover, this pipeline
+does not contain any verification step for the downloaded image, thus not
+verifying provenance of the image itself. 
 
 \bigbreak\textbf{Practical Example}\bigbreak 
 
-CVE-2014-9357 \cite{CVE-2014-9357} is a known vulnerability, solved from Docker
-1.3.3, that allowed attackers to execute arbitrary code with root privileges via
-a malicious image or a build from a compromised Dockerfile. Such vulnerability
-exploited the fact that \textit{xz} utility, used for decompressing LZMA
-archives during a call to \textit{docker pull}, was executed as root. 
+As stated, the \textit{docker pull} command follows an unsafe pipeline, which
+can lead to compromised the system without even running the container relater to
+the poisoned Docker image. A report by Red Hat \cite{docker_pull_red_hat}
+describes how many vulnerabilities against Docker exploited such mechanism. For
+example a method widely used by the attackers, now resolved, was to to perform
+\textit{directory traversal attacks} during the unpack phase of the pipeline
+previously reported: a tarball's capacity was used to unpack to any possible
+path like ``../../../'', in this way a poisoned image could have overridden any
+part of the host filesystem. \par CVE-2014-9357 \cite{CVE-2014-9357} was another
+known vulnerability, solved from Docker 1.3.3, that allowed attackers to execute
+arbitrary code with root privileges via a malicious image or a build from a
+compromised Dockerfile. Such vulnerability exploited the fact that \textit{xz}
+utility, used for decompressing LZMA archives during a call to \textit{docker
+pull}, was executed as root. 
 
 \subsubsection{Outdated Images}
 
 The importance of images in Docker ecosystem makes it of primary importance to
 attest their security. On the one hand we have seen how images could be
 \textit{poisoned} by an attacker, on the other hand even if our images are not
-compromised it does not mean that they are safe. It is important to make
-sure that the images at the base of our running containers are updated, not
+compromised it does not mean that they are safe. It is important to make sure
+that the images at the base of our running containers are updated, not
 containing any known vulnerabilities.  An outdated image can be affected by a
 series of security threats that were already fixed in an updated version of the
 same image. \par A study by Gummaraju, Desikan, and Turner at BanyanOps
-demonstrated how about more than the 30\% of the official repositories present
-on Docker Hub are affected by a variety of security threats, such as
-\textit{heartbleed}, \textit{shellshock}, \textit{poodle}, ... These numbers
-grow up to the 40\% taking in consideration also the images loaded by users
-\cite{gummaraju_desikan_turner}. 
+\cite{gummaraju_desikan_turner} demonstrated how about more than the 30\% of the
+official repositories present on Docker Hub are affected by a variety of
+security threats, such as \textit{heartbleed}, \textit{shellshock},
+\textit{poodle}, etc. These numbers grow up to the 40\% taking in consideration
+also the images loaded by users. 
 
 \subsubsection{Management Of Secrets}
 
@@ -1245,14 +1257,15 @@ For example, if our application can run standalone, without the need for
 additional libraries, a good choice would be to use as base image for our
 container \textit{scratch}. Such image is used to create super minimal images,
 without adding any extra layer in our newly image. It can't be used for any
-application, just for the ones that contain a single binary, but it represents
-a good example of how we should design our images using as few layers and
-features as possible. \par To analyse our newly created image we can use
-different tools, in the next paragraphs I will introduce two of the most used.
-Scan an image after a build can be a great way to avoid having vulnerabilities
-and exposures. For example it could happen to have an image that contains
-OpenSSL with the \textit{heartbleed} vulnerability still present, the analysis phase
-could notify us of such a problem in order to solve it. 
+application, just for the ones that contain a single binary, but it represents a
+good example of how we should design our images using as few layers and features
+as possible. \par To analyse our newly created image we can use different tools,
+like \textit{Docker Security Scanning} and \textit{Clair} that will be described
+in the next paragraphs. Scan an image after a build can be a great way to avoid
+having vulnerabilities and exposures. For example it could happen to have an
+image that contains OpenSSL with the \textit{heartbleed} vulnerability still
+present, the analysis phase could notify us about it in order to solve it before
+it becomes a problem. 
 
 \subsubsection{Docker Security Scanning}
 
@@ -1305,27 +1318,19 @@ our application container:
 
 \subsection{Image Verification}
 
-Most of the time Docker is used downloading third-party images and not creating
-your own images from scratch. As seen in the previous section one of the risk of
-this practice is to come across poisoned images. For this reason some
-precautions must be taken before running the \textit{docker pull} command. \par
-Red Hat suggests \cite{docker_image_insecurity} different ways to protect
-ourselves while dealing with Docker images. The first and more general is to use
-only Docker images coming from trusted sources, for example only the official
-ones present on the Docker Hub which also have the guarantee of being scanned by
-Docker Security Scanning. Another way to improve security is to avoid the use of
-\textit{docker pull}, separating the download and unpack/install steps. This can
-be done downloading Docker images using a security channel provided by a trusted
-source and then running \textit{docker load} to load the image from the TAR
-archive downloaded. The last advice provided by Red Hat is to avoid any
-intentional or accidental access to the Docker Hub. In this way when you want to
-download a new Docker image you must provide explicitly its register of
-provenance, avoiding unintentional download due to some typos in a Dockerfile
-for example. This can be achieved blocking \textit{index.docker.io} at the
-firewall-level or by modifying accordingly the \textit{/etc/hosts} file. \par A
-possible solution for image verification is also provided directly by Docker
-with its \textit{Docker Content Trust}, that I will analyse better in the next
-paragraph.
+Poisoned images, as seen in the previous section, can represent an important
+risk for the security when using Docker. In particular it is of primary
+importance to take some precautions before using the \textit{docker pull}
+command, making sure before that the image provided by the author is the same as
+what we get from the registry that we are using. In computer security this
+problem is better known as a \textit{trust} problem, \ie assuring both the
+integrity and the publisher of the data exchanged. \par In most cases this problem
+is addressed using a mechanism of \textit{cryptographic signing}, in which the
+data is signed with the \textit{private key} of its author and verified with the
+\textit{public key of the same}. Docker implements such mechanism via
+\textit{Docker Content Trust}, which however is disabled by default and must be
+explicitly activated. Once activated it allow to verify both the integrity and
+the publisher of all the data received from a registry over any channel.
 
 \subsubsection{Docker Content Trust}
 
@@ -1334,18 +1339,19 @@ introduced with Docker Engine 1.8 that allows to verify the identity of the
 publisher of a Docker image. An image is signed by the Docker Engine with the
 private key of its publisher before being pushed to a remote registry, then when
 such image is pulled it is verified using the public key of the publisher to
-assure that it has not been tampered. Docker Content Trust is disabled by
-default, but it can be activated using the following command inside a shell
-session: \textit{export DOCKER\_CONTENT\_TRUST=1}. Its use does not influence
-regular Docker workflow, indeed it does not require special commands to be used.
-All the normal commands can be still used, with the exception that they only
-work with signed content. \par Docker Content Trust is based on \textit{The
-Update Framework} and \textit{Notary} to provide both the integrity and the
-freshness of the content. The Update Framework or TUF is an open-source
-framework designed to make the update life-cycle safe. Notary, instead, is a
-utility for securely publishing and verifying content that is distributed over
-any insecure network. The entire mechanism of Docker Content Trust is based on
-the use of two different types of keys: 
+assure that it has not been tampered. The signature is referred only to a single
+TAG of the considered image. Docker Content Trust is disabled by default, but it
+can be activated using the following command inside a shell session:
+\textit{export DOCKER\_CONTENT\_TRUST=1}. Its use does not influence regular
+Docker workflow, indeed it does not require special commands to be used. All the
+normal commands can be still used, with the exception that they only work with
+signed content. \par Docker Content Trust is based on \textit{The Update
+Framework} and \textit{Notary} to provide both the integrity and the freshness
+of the content. The Update Framework or TUF is an open-source framework designed
+to make the update life-cycle safe. Notary, instead, is a utility for securely
+publishing and verifying content that is distributed over any insecure network.
+The entire mechanism of Docker Content Trust is based on the use of two
+different types of keys: 
 \begin{itemize}
   \item \textit{The Tagging Key} that is generated every time that a publisher
   creates a new repository and can be shared with anyone who can sign content
@@ -1354,10 +1360,10 @@ the use of two different types of keys:
   and should never be shared with anyone. It is needed for creating a new
   repository and for rotating an existing Tagging key. 
 \end{itemize}
-Docker also manages Timestamp keys that are generated and stored on a remote
+Docker also manages Timestamp Keys that are generated and stored on a remote
 server. These keys are used to guarantee the use of the most updated version of
-a particular content. \par As described by its documentation, Docker is
-particularly effective against three different types of attack:
+a particular content. \par As described by its documentation, Docker Content
+Trust is particularly effective against three different types of attack:
 \begin{itemize}
   \item \textit{Image Forgery}: if an attacker obtains to take a privileged
   network position, compromising a registry, he can still not be able to serve
