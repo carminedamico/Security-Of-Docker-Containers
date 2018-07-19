@@ -8,6 +8,7 @@
 % command \url{...} to create URL with hyperlink)
 %
 \usepackage{color}
+\usepackage[binary-units]{siunitx}
 \usepackage{listings}
 \lstset{
 basicstyle=\ttfamily,
@@ -234,8 +235,9 @@ a shared Linux kernel \cite{wikipedia_LXC}. Each container ``sees'' its own CPU,
 memory, network interface, I/O, ... \par The isolation among containers is
 obtained thanks to some Linux kernel's tools: \textit{namespace} and
 \textit{cgroups}. In the following subsections I will analyse these two
-components, both for their importance for containerisation and for the fact that
-they are also the basic components in Docker.
+components and also \textit{Linux kernel capabilities}, both for their
+importance for containerisation and for the fact that they are also the basic
+components in Docker.
 
 \subsubsection{Kernel Namespace}
 
@@ -245,8 +247,8 @@ personal isolated resources. In other words they allow to create pool of
 processes that think to be the only ones of the system. In this way groups of
 processes, that are part of different namespaces, can see different set of
 resources. Namespaces work by assigning to different resources the same name in
-different namespaces. In the Linux kernel six different type of environments are
-implemented \cite{red_hat_introduction_to_namespaces}:
+different namespaces. In the Linux kernel five different type of environments
+are implemented \cite{red_hat_introduction_to_namespaces}:
   \begin{itemize}
     \item \textbf{Mount namespaces} isolate the set of file system mount points
     seen by a group of processes so that processes in different mount namespaces
@@ -315,6 +317,20 @@ are \cite{red_hat_introduction_to_cgroups}:
   tasks and can be used for performance analysis. 
 \end{itemize}   
 
+\subsubsection{Linux Capabilities}
+
+\textit{Linux kernel capabilities} \cite{man_capabilities} allow to have a
+fine-grained access control system compared to the simple dichotomy
+``root/non-root'', restricting container's privileges. Using capabilities the
+concept of root changes its meaning inside a container: a user can be root
+inside a container, still not having all the normal privileges of a real root
+user, because only a reduced set of capabilities is allowed. This approach
+prevents an attacker who manages to escalate as root within a container to have
+full control of the same. There are different types of capabilities that can be
+granted or dropped within a container. For example, there are capabilities for
+managing all the ``mount'' operations, for accessing the raw socket and for
+handling operations on the file system.
+
 \subsection{Docker}
 
 As today, \textit{Docker} represents the most used computer program for
@@ -323,14 +339,14 @@ operating-system-level virtualisation (containerisation). It is developed by
 the 2013's PyCon conference. During its presentation \textit{Docker} was
 announced as the future of Linux Containers \cite{docker_pycon_presentation},
 indeed from its first releases it reiterated many concepts from them, such as
-\textit{namespaces} and \textit{cgroups}, but providing a simpler user
-experience and a complete ecosystem to create and manage containers.\par
-Docker's success is mainly addressable to its portability and lightweight nature
-which allow to create high density environments. It is the ideal software in
-scenarios where continuous integration and continuous delivery (CI/CD) are
-required, allowing developers not only to build their code, but also to test
-their code in any environment type and as often as possible to catch bugs early
-in the applications development life cycle \cite{docker_ci_cd}. 
+\textit{namespaces}, \textit{cgroups} and \textit{capabilities}, but providing a
+simpler user experience and a complete ecosystem to create and manage
+containers.\par Docker's success is mainly addressable to its portability and
+lightweight nature which allow to create high density environments. It is the
+ideal software in scenarios where continuous integration and continuous delivery
+(CI/CD) are required, allowing developers not only to build their code, but also
+to test their code in any environment type and as often as possible to catch
+bugs early in the applications development life cycle \cite{docker_ci_cd}. 
 
 \subsubsection{History}
 
@@ -691,20 +707,20 @@ verifying provenance of the image itself.
 
 \bigbreak\textbf{Practical Example}\bigbreak 
 
-As stated, the \code{docker pull} command follows an unsafe pipeline, which
-can lead to compromise the system without even running the container relater to
-the poisoned Docker image. A report by Red Hat \cite{docker_pull_red_hat}
-describes how many vulnerabilities against Docker exploited such mechanism. For
-example a method widely used by the attackers, now resolved, was to perform
+As stated, the \code{docker pull} command follows an unsafe pipeline, which can
+lead to compromise the system without even running the container relater to the
+poisoned Docker image. A report by Red Hat \cite{docker_pull_red_hat} describes
+how many vulnerabilities against Docker exploited such mechanism. For example a
+method widely used by the attackers, now resolved, was to perform
 \textit{directory traversal attacks} during the unpack phase of the pipeline
 previously reported: a tarball's capacity was used to unpack to any possible
 path like ``../../../'', in this way a poisoned image could have overridden any
-part of the host filesystem. \par CVE-2014-9357 \cite{CVE-2014-9357} was another
-known vulnerability, solved from Docker 1.3.3, that allowed attackers to execute
-arbitrary code with root privileges via a malicious image or a build from a
-compromised Dockerfile. Such vulnerability exploited the fact that \textit{xz}
-utility, used for decompressing LZMA archives during a call to \textit{docker
-pull}, was executed as root. 
+part of the host file system. \par CVE-2014-9357 \cite{CVE-2014-9357} was
+another known vulnerability, solved from Docker 1.3.3, that allowed attackers to
+execute arbitrary code with root privileges via a malicious image or a build
+from a compromised Dockerfile. Such vulnerability exploited the fact that
+\textit{xz} utility, used for decompressing LZMA archives during a call to
+\textit{docker pull}, was executed as root. 
 
 \subsubsection{Outdated Images}
 
@@ -728,16 +744,17 @@ Docker containers are very used in the development of microservices. A
 microservice architecture is very different than a monolithic one, specially in
 the deployment phase: a monolithic architecture is often just configured,
 launched and then it runs for a long period of time (which could even last
-years); microservices instead are continuously created and destroyed. In both cases,
-sensitive information are needed, like API keys, database passwords, SSL/TLS
-keys, SSH keys, and so on. Compromising these information would compromise the entire
-system. \par In a monolithic architecture the management of these information is
-non trivial, indeed they can be stored in the system permanently and they can be
-renovated using some mechanism like the ``Privileged Accounts Managers''
-\cite{privileged_accounts_managers}. Despite these solutions have been used and
-tested for years in the context of monolithic service, they can't be applied to
-microservices based on containers. The two main concerns for the management of
-secrets inside Docker containers are the following\cite{secret_management_concerns_docker}:
+years); microservices instead are continuously created and destroyed. In both
+cases, sensitive information are needed, like API keys, database passwords,
+SSL/TLS keys, SSH keys, and so on. Compromising these information would
+compromise the entire system. \par In a monolithic architecture the management
+of these information is non trivial, indeed they can be stored in the system
+permanently and they can be renovated using some mechanism like the ``Privileged
+Accounts Managers'' \cite{privileged_accounts_managers}. Despite these solutions
+have been used and tested for years in the context of monolithic service, they
+can't be applied to microservices based on containers. The two main concerns for
+the management of secrets inside Docker containers are the
+following\cite{secret_management_concerns_docker}:
 \begin{itemize}
   \item Docker images have an immutable nature, this means that they are created
   once and then deployed in many different environments. Their nature is
@@ -1008,13 +1025,55 @@ simplify and speedup the creation of AppArmor profiles. It basically generates
 AppArmor profiles from YAML specification files. Such YAML files follow a very
 simple syntax where three sections are present:
 \begin{itemize}
-  \item \textit{File system}, where we can define the type of actions that can be
-  performed on a certain path. Actions include ``Read only'', ``Log on write'',
-  ``Allow execution'', ``Deny execution'', ``Write'', and so on;
+  \item \textit{File system}, where we can define the type of actions that can
+  be performed on a certain path. Actions include ``Read only'', ``Log on
+  write'', ``Allow execution'', ``Deny execution'', ``Write'', and so on. An
+  example of section of this type is the following, where \file{/bin},
+  \file{/dev} and \file{/mnt} are accessible only for reading, the \file{/home}
+  folder can be accessed for writing, the only process that can be executed is
+  \textit{nginx} and the execution of \code{/bin/sh} is denied:
+\begin{lstlisting}
+[Filesystem]
+ReadOnlyPaths = [
+  "/bin/**",
+  "/dev/**",
+  "/mnt/**"
+]
+
+WritablePaths = [
+  "/home/**"
+]
+
+AllowExec = [
+  "/usr/sbin/nginx"
+]
+
+DenyExec = [
+  "/bin/sh"
+]   
+
+\end{lstlisting}
   \item \textit{Capabilities}, where a whitelist of the allowed capabilities is
-  defined;
+  defined. An example of section of this type is the one that follows, where the
+  only capabilities allowed are \textit{chown} and \textit{net\_bind\_service}:
+\begin{lstlisting}
+[Capabilities]
+Allow = [
+  "chown",
+  "net_bind_service"
+]
+\end{lstlisting}
   \item \textit{Network}, where allowed protocols and network policies are
-  defined.
+  defined. An example of network section is the following, where the only
+  protocols allowed are TCP, UDP and ICMP:
+\begin{lstlisting}
+[Network]
+Protocols = [
+  "tcp",
+  "udp",
+  "icmp"
+]
+\end{lstlisting}
 \end{itemize}
 Bane directly installs the generated profiles inside AppArmor's directory.  
 
@@ -1184,8 +1243,14 @@ flags of the \code{docker run} command:
   indicated with the \code{--memory} flag.
 \end{itemize}
 An integer number must follow such flags to indicate the amount of memory,
-together with one of the following suffix: \code{b} (bytes), \code{k}
-(kilobytes), \code{m} (megabytes), \code{g} (gigabytes).
+together with one of the following suffix: \code{b} (\SI{}{byte}), \code{k}
+(\SI{}{\kilo\byte}), \code{m} (\SI{}{\mega\byte}), \code{g} (\SI{}{\giga\byte}).
+For example the following command can be used to run a container with the memory
+limited both by an hard limit of 2 \SI{}{\giga\byte} and a soft limit of 1
+\SI{}{\giga\byte}:
+\begin{lstlisting}
+docker run --memory=2g --memory-reservation=1g image_name
+\end{lstlisting}
   
 \subsubsection{CPU Limitation} 
 
@@ -1202,8 +1267,18 @@ runtime configuration flags of the \code{docker run} command:
   (0,2 means to use the first and the third CPU/core);
   \item \code{--cpu-shares} assigns a \textit{weight} to a container  when CPU
   cycles are constrained. A weight is used to prioritise container CPU resources
-  for the available CPU cycles. The default weight for a container is 1024.
+  for the available CPU cycles. The default weight for a single container is
+  1024.
 \end{itemize}
+For example the following commands can be used to run two containers, that can
+simply be called \textit{A} and \textit{B}, which have 70\% and 30\%
+respectively of the available CPU resources:
+\begin{lstlisting}
+docker run --cpu-shares 716 image_name_A
+docker run --cpu-shares 307 image_name_B
+\end{lstlisting}
+Where 716 is the 70\% of 1024, while 307 is the 30\%.
+
 
 \subsubsection{I/O Limitation}
 
@@ -1219,6 +1294,11 @@ runtime configuration flags that can be used are:
   \item \code{--device-write-iops} indicates the limit (in I/O per second)
   with which a container can read to a device.
 \end{itemize}
+For example the following command can be used to limit the write speed of a
+container to \file{/dev/sda} to \SI{50}{\mega\byte/\second}.
+\begin{lstlisting}
+docker run --device-write-bps /dev/sda:50mb image_name
+\end{lstlisting}
 
 \subsection{User Namespace}
 
@@ -1452,11 +1532,64 @@ There are mainly three different types of policies that can be created:
 \begin{itemize}
   \item \textit{Identity based Connectivity Access Control}: they operate at
   layer 3, indicating how the endpoints can communicate between each other
-  relying on their labels;
+  relying on their labels. An example of policy that acts at layer 3, allowing
+  the communication from endpoints with the label \textit{role=A} to endpoints
+  with the label \textit{role=B}, is:
+  \begin{lstlisting}
+[{
+  "labels": [{"key": "name", "value": "layer-3-rule"}],
+  "endpointSelector": {"matchLabels": {"role":"B"}},
+  "ingress": [{
+      "fromEndpoints": [
+        {"matchLabels":{"role":"A"}}
+      ]
+  }]
+}]
+  \end{lstlisting}
   \item \textit{Port Restrictions}: they work at layer 4, restricting the ports
-  that can be used by an application to communicate;
+  that can be used by an application to communicate. An example of policy that
+  acts at layer 4, allowing all the endpoints with label \textit{app=A} to emit
+  packets using TCP on port 80, is:
+  \begin{lstlisting}
+[{
+  "labels": [{"key": "name", "value": "layer-4-rule"}],
+  "endpointSelector": {"matchLabels":{"app":"A"}},
+  "egress": [{
+      "toPorts": [
+          {"ports":[ {"port": "80", "protocol": "TCP"}]}
+      ]
+  }]
+}]
+  \end{lstlisting}
   \item \textit{Application Level Access Control}: they work at layer 7,
-  enforcing access control based on protocol calls like RPC or REST CRUD. 
+  enforcing access control based on protocol calls like RPC or REST CRUD. An
+  example of policy that acts at layer 7, allowing all the endpoints with label
+  \textit{app=A} to receive only \textit{GET} requests to the URL \textit{/foo}
+  on port 80 from all the endpoints with label \textit{env=B}, is:
+  \begin{lstlisting}
+[{
+  "labels": [{"key": "name", "value": "layer-7-rule"}],
+  "endpointSelector": {"matchLabels": {"app": "A"}},
+  "ingress": [{
+    "fromEndpoints": [
+      {"matchLabels": {"env": "B"}}
+    ]},{
+    "toPorts": [{
+      "ports": [
+        {"port": "80", "protocol": "TCP"}
+      ],
+      "rules": {
+        "HTTP": [
+          {
+            "method": "GET",
+            "path": "/foo"
+          }
+        ]
+      }
+    }]
+  }]
+}]
+\end{lstlisting}
 \end{itemize} 
 A policy can be written like a JSON object, indicating the possible connections
 between endpoints. By default all the communications between endpoints are
@@ -1906,6 +2039,9 @@ Introduction to Linux Containers, \url{https://access.redhat.com/documentation/e
 \bibitem{red_hat_introduction_to_cgroups}
 Introduction to Control Groups (Cgroups),
 \url{https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/resource_management_guide/ch01}
+
+\bibitem{man_capabilities}
+Capabilities, \url{http://man7.org/linux/man-pages/man7/capabilities.7.html}
 
 \bibitem{docker_official_site}
 Docker official site, \url{https://www.docker.com/}
