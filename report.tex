@@ -7,8 +7,11 @@
 % This is to create hyperlinks for index, URLs and citations (now we can use the
 % command \url{...} to create URL with hyperlink)
 %
+
 \usepackage{color}
 \usepackage[binary-units]{siunitx}
+\sisetup{per-mode=symbol}
+
 \usepackage{listings}
 \lstset{
 basicstyle=\ttfamily,
@@ -47,6 +50,7 @@ escapechar=`
 \setlength\parskip{\medskipamount}
 \setlength\parindent{0pt}
 
+
 \newcommand{\file}[1]{\texttt{#1}\xspace}
 % per inserire codice di esempio in-line
 \newcommand{\code}[1]{\lstinline|#1|}
@@ -69,7 +73,7 @@ escapechar=`
 {\normalsize Report for the Computer Security exam at the Politecnico di Torino}
 } \author{Carmine D'Amico (239540) \\
 {\normalsize tutor: Antonio Lioy} }
-\date{? 2018}
+\date{September 2018}
 \maketitle
 
 \vfill
@@ -178,8 +182,8 @@ one that is on top of the host's OS (\textit{hosted hypervisor})
 better performances, not having the overhead of the extra layer of the host's
 operating system. It manages directly hardware and the guest's operating system.
 On the contrary hosted hypervisor can be manged in an easier way running as a
-normal computer program on the user's operating
-system \cite{bui_docker_security}. \par As said before, the hypervisor needs to
+normal computer program on the user's operating system
+\cite[Sec.~2]{bui_docker_security}. \par As said before, the hypervisor needs to
 run on the user's computer which is defined as \textit{host machine}, while each
 virtual machine is called \textit{guest machine}. It is important to remember
 this terminology because it will be used also in the following, referring to
@@ -638,7 +642,6 @@ default, so a container can use as much of a given resource as the host's kernel
 scheduler allows. We will see in the next section how to configure Docker to
 work with cgroups, managing resources for containers. 
 
-%\bigbreak\textbf{Practical Example}\bigbreak 
 
 \subsubsection{Container Breakout}
 
@@ -811,7 +814,7 @@ containers creating a Virtual Ethernet Bridge, named \textit{docker0}. At
 container creation time, Docker creates and connects a new network interface with
 a unique name to the bridge. Such interface is also connected to the
 \textit{eth0} interface of the
-container(\myfig{\ref{fig:docker_network_model}}). This type of configuration is
+container (\myfig{\ref{fig:docker_network_model}}). This type of configuration is
 vulnerable to \textit{ARP spoofing} attacks, since the bridge forwards all of
 its incoming packets without any filtering. \par An ARP spoofing attack is a
 very well known attack in literature. It takes advantage of the ARP protocol,
@@ -830,6 +833,7 @@ the compromised container controlled by the attacker.
   \end{figure}
 
 \bigbreak\textbf{Practical Example}\bigbreak 
+\label{sec:arpspoof_description}
 
 A practical example of this type of attack can be reproduced inside a
 containerised environment just running a Docker container with \textit{dSniff}
@@ -919,44 +923,50 @@ introduce refer directly to specific attacks previously described, others are
 generic practices that can be useful for increasing the security of the system.
 \par The suggested tools are almost always either provided by Docker itself or
 open-source and free; I deliberately avoided to propose commercial and
-closed-source software because it is often more difficult to analyse and
-test. Most of the practices are present in literature or directly suggested in
-the Docker's documentation. In particular I have often referred to Gianluca
-Arbezzano's ``Docker Security - Play Safe'' \cite{arbezzano_play_safe} and to
-Adrian Mouat's ``Using Docker. Developing and Deploying Software with
-Containers'' \cite{mouat_using_docker} to find the best practices for security
-enhancement in Docker. 
+closed-source software because it is often more difficult to analyse and test.
+Most of the practices are present in literature or directly suggested in the
+Docker's documentation. In particular I have often referred to Gianluca
+Arbezzano's ``Docker Security - Play Safe'' \cite{arbezzano_play_safe} e-book and
+to Adrian Mouat's ``Using Docker. Developing and Deploying Software with
+Containers'' \cite{mouat_using_docker} paper to find the best practices for
+security enhancement in Docker. 
 
 \subsection{Mandatory Access Control}
 
-A \textit{mandatory access control} or \textit{MAC} system is a set of rules that define
-what a subject can or cannot do in reference to a certain object. Usually the
-operating system plays the role of the policy administrator; threads and
-processes are the subjects; files, directories, network ports, and so on are the
-objects of the defined policies. When a subject tries to perform an action onto an
-object the OS checks all the defined policies and decides if the action can be
-done or not. A user cannot override or modify these policies, only the policy
-administrator can \cite{wiki_MAC}. Linux uses by default \textit{discretionary access
-control (DAC)}, restricting access to objects based on the identity of subjects
-and/or groups to which they belong (authorisations are indicated on each
-file/directory by the \code{rwx} flags). MAC and DAC can works together on a
-Linux machine, with DAC that must be passed before MAC evaluation.\par Linux
-offers some kernel security modules, like \textit{Security-Enhanced Linux
-(SELinux)}, \textit{AppArmor} and \textit{Secure Computing Mode (seccomp)}, that
-can be configured using access control security policies to implement mandatory
-access control. Docker supports by default these modules and by using them we
-can have an additional extra layer of security, which can result decisive to
-mitigate kernel exploits and container exploits. An example of this can be found
-in Jon-Anders Kabbe's work ``Security analysis of Docker containers in a
-production environment'' \cite{kabbe_security_docker}, where he demonstrates how
-Dirty COW, the kernel exploit analysed in the previous section, can simply be
-prevented using Docker's default profile of AppArmor. \par  The general policy
-of Docker's default profiles for the described Linux kernel security modules is
-usually to protect the host from the containers and not also containers from
-other containers \cite{to_docker_or_not_to_docker}. However writing specific
-profiles for each container running on the system can address such problems,
-making MAC very useful for the enhancement of containers isolation and for the
-prevention of kernel exploits and container breakouts. 
+\textit{Mandatory access control} systems are well-known in the literature and
+often their use is recommended in conjunction with Docker. Their use is proposed
+in many studies from authors such as \textit{Yasrab}
+\cite[Sec.~4.1]{mitigating_docker_security_issues_yasrab}, \textit{Combe et al.}
+\cite{to_docker_or_not_to_docker} and \textit{Raj MP et al.}
+\cite[Sec.~3.a-b]{raj_et_al}.\par A  mandatory access control or \textit{MAC}
+system is a set of rules that define what a subject can or cannot do in
+reference to a certain object. Usually the operating system plays the role of
+the policy administrator; threads and processes are the subjects; files,
+directories, network ports, and so on are the objects of the defined policies.
+When a subject tries to perform an action onto an object the OS checks all the
+defined policies and decides if the action can be done or not. A user cannot
+override or modify these policies, only the policy administrator can
+\cite{wiki_MAC}. Linux uses by default \textit{discretionary access control
+(DAC)}, restricting access to objects based on the identity of subjects and/or
+groups to which they belong (authorisations are indicated on each file/directory
+by the \code{rwx} flags). MAC and DAC can works together on a Linux machine,
+with DAC that must be passed before MAC evaluation.\par Linux offers some kernel
+security modules, like \textit{Security-Enhanced Linux (SELinux)},
+\textit{AppArmor} and \textit{Secure Computing Mode (seccomp)}, that can be
+configured using access control security policies to implement mandatory access
+control. Docker supports by default these modules and by using them we can have
+an additional extra layer of security, which can result decisive to mitigate
+kernel exploits and container exploits. An example of this can be found in
+Jon-Anders Kabbe's work ``Security analysis of Docker containers in a production
+environment'' \cite[Sec.~4.2.1]{kabbe_security_docker}, where he demonstrates
+how Dirty COW, the kernel exploit analysed in the previous section, can simply
+be prevented using Docker's default profile of AppArmor. \par  The general
+policy of Docker's default profiles for the described Linux kernel security
+modules is usually to protect the host from the containers and not also
+containers from other containers \cite{to_docker_or_not_to_docker}. However
+writing specific profiles for each container running on the system can address
+such problems, making MAC very useful for the enhancement of containers
+isolation and for the prevention of kernel exploits and container breakouts. 
 
 \subsubsection{SELinux}
 
@@ -995,27 +1005,13 @@ AppArmor can be used in two different modes:
 We can load our pre-configured AppArmor profile with Docker at launch time, if
 our host supports such kernel security module. The profile is loaded directly
 into the container in enforcement mode. If no profile is specified Docker uses
-its default one, which denies the access only to few filesystems on the host
-\cite{bui_docker_security}. AppArmor profiles are simple text files where rules
+its default one. AppArmor profiles are simple text files where rules
 for capabilities, networking and access to certain objects can be specified.
 Such rules can be referred to various access controls, denying or allowing a
 subject to perform certain actions on an object.   Security profiles can be
 saved in /apparmor.d/ and they can be loaded into a container using the flag
 \code{-security-opt=``apparmor:profile\_name''} with the \code{docker run}
 command. 
-
-\bigbreak\textbf{LiCShield}\bigbreak 
-
-\textit{LiCShield} \cite{licshield} is an open-source tool that generates
-AppArmor profiles by following the behaviour of the Docker daemon during the
-execution of the build and run commands. The tool was presented at first only
-for LXC with the paper ``Security hardening of Linux containers and their
-workloads'' \cite{licshield_paper}, then it was adapted to work also with
-Docker. \par LiCShield works starting from a given Docker image, it traces the
-execution of the related container, collecting the information about the
-performed operations, the resources used and the required permissions. From the
-information retrieved LiCShield generates at the end a specific AppArmor profile
-for the analysed container. 
 
 \bigbreak\textbf{Bane}\bigbreak 
 
@@ -1155,26 +1151,28 @@ As described in the previous section, we can not manage secrets in Docker as we
 do with the classic monolithic web service. They can not be stored in a
 Dockerfile or in our application's source code. In this paragraph we will see a
 series of tools that can be used to achieve a correct management of the secrets.
+The first, \textit{Docker secrets}, is proposed by Docker in its documentation
+\cite{docker_secrets}, while the second, \textit{Vault}, is suggested by the
+\textit{Katacoda} \cite{katacoda_vault} site in one of its courses about Docker.
 
 \subsubsection{Docker Secrets}
 
-\textit{Docker Secrets} \cite{docker_secrets} was released with version 1.13 of
-Docker. It can be used with Docker swarms to create a central built-in security
-database, where secrets can be stored and transmitted to only those containers
-that need access to them. Secrets are encrypted both during their transmission
-and storage inside a Docker swarm. \par When a secret is added to a Docker swarm
-a bidirectional TLS connection is created between it and the swarm manager. The
-secret is at first encrypted and stored inside the swarm manager, then it is
-replicated among all the the other managers of the cluster to ensure its
-availability. A node of the cluster can require a secret only if it is a manager
-of the swarm or a running service task which have been granted access to the
-secret. When the secret is transmitted to a node that requires it, it is
-decrypted and stored inside the container in an in-memory file system. When the
-node stops running its stored secrets are unmounted and flushed from the
-container's memory.\par A secret can be added to Docker using the command
-\code{docker secret create secret\_name *secret*} and the it can be included
-inside a container using the code \code{--secret secret\_name} with the \code{docker
-run} command.
+\textit{Docker Secrets} was released with version 1.13 of Docker. It can be used
+with Docker swarms to create a central built-in security database, where secrets
+can be stored and transmitted to only those containers that need access to them.
+Secrets are encrypted both during their transmission and storage inside a Docker
+swarm. \par When a secret is added to a Docker swarm a bidirectional TLS
+connection is created between it and the swarm manager. The secret is at first
+encrypted and stored inside the swarm manager, then it is replicated among all
+the the other managers of the cluster to ensure its availability. A node of the
+cluster can require a secret only if it is a manager of the swarm or a running
+service task which have been granted access to the secret. When the secret is
+transmitted to a node that requires it, it is decrypted and stored inside the
+container in an in-memory file system. When the node stops running its stored
+secrets are unmounted and flushed from the container's memory.\par A secret can
+be added to Docker using the command \code{docker secret create secret\_name
+*secret*} and the it can be included inside a container using the code
+\code{--secret secret\_name} with the \code{docker run} command.
 
 \subsubsection{Vault}
 
@@ -1216,7 +1214,7 @@ for reading and writing data the access token must be used to authenticate.
 
 Denial-of-service attacks can be a serious threat for Docker containers as we
 have seen in the previous section. In order to prevent such attacks we must make
-sure that the use of resources by containers is limited. Docker provides its own
+sure that the use of resources by containers is limited. Docker suggests its own
 ways \cite{resource_on_docker}, based on the use of cgroup, to manage
 how much memory, CPU or block I/O a container can use.
 
@@ -1305,24 +1303,25 @@ docker run --device-write-bps /dev/sda:50mb image_name
 Most of the privilege-escalation attacks can be prevented running Docker
 containers' application as unprivileged user. At the same time, however, some
 applications require explicitly to run as root within their containers. In these
-cases it can be useful to \textit{remap the root user} \cite{isolate_namespace}
-of a Docker container to a less privileged user on the Docker host. Such
-technique is possible thanks to the use of Linux namespaces. \par The namespace
-remapping is achieved through two important files: \file{/etc/subuid} and
-\textit{/etc/subgid}. These files contain an entry for each user in the system
-and each entry is composed by three fields that represent: the ID of a user, his
-beginning UID (in /etc/subuid) or GID (in /etc/subgid) and a maximum number of
-UIDs or GIDs available to the user. \textit{dockermap} is the default ID used by
-Docker to represent the unprivileged system user that is used for the remapping.
-We can manually create this entry inside the two files, specifying an arbitrary
-range for the UID/GID (paying attention to not overlap the range of the new user
-with the already existing ranges of the other host's users). At this point we
-can configure the Docker daemon to run containers using the just created user.
-To do this we can edit Docker's JSON configuration file
-\file{/etc/docker/daemon.json} appending the option: \code{``userns-remap'':
-``default''}. \par It is important to pay attention to the fact that if there is any
-location on the host where a container can write, permissions must be
-adjusted accordingly for the dockermap user. 
+cases it can be useful to \textit{remap the root user} of a Docker container to
+a less privileged user on the host, as suggested by the Docker documentation
+\cite{isolate_namespace}. Such technique is possible thanks to the use of Linux
+namespaces. \par The namespace remapping is achieved through two important
+files: \file{/etc/subuid} and \textit{/etc/subgid}. These files contain an entry
+for each user in the system and each entry is composed by three fields that
+represent: the ID of a user, his beginning UID (in /etc/subuid) or GID (in
+/etc/subgid) and a maximum number of UIDs or GIDs available to the user.
+\textit{dockermap} is the default ID used by Docker to represent the
+unprivileged system user that is used for the remapping. We can manually create
+this entry inside the two files, specifying an arbitrary range for the UID/GID
+(paying attention to not overlap the range of the new user with the already
+existing ranges of the other host's users). At this point we can configure the
+Docker daemon to run containers using the just created user. To do this we can
+edit Docker's JSON configuration file \file{/etc/docker/daemon.json} appending
+the option: \code{``userns-remap'': ``default''}. \par It is important to pay
+attention to the fact that if there is any location on the host where a
+container can write, permissions must be adjusted accordingly for the dockermap
+user. 
 
 \subsection{Image Creation}
 
@@ -1347,11 +1346,13 @@ application, just for the ones that contain a single binary, but it represents a
 good example of how we should design our images using as few layers and features
 as possible. \par To analyse the newly created image we can use different tools,
 like \textit{Docker Security Scanning} and \textit{Clair} that will be described
-in the next paragraphs. Scan an image after a build can be a great way to avoid
-having vulnerabilities and exposures. For example it could happen to have an
-image that contains OpenSSL with the \textit{heartbleed} vulnerability still
-present, the analysis phase could notify us about it in order to solve it before
-it becomes a problem. 
+in the next paragraphs. The former one is proposed by Docker itself
+\cite{docker_security_scanning}, while the latter is suggested by
+\textit{Arbezzano} \cite[Sec.~1.10]{arbezzano_play_safe}. \par Scan an image
+after a build can be a great way to avoid having vulnerabilities and exposures.
+For example it could happen to have an image that contains OpenSSL with the
+\textit{heartbleed} vulnerability still present, the analysis phase could notify
+us about it in order to solve it before it becomes a problem. 
 
 \subsubsection{Docker Security Scanning}
 
@@ -1471,8 +1472,9 @@ Trust is particularly effective against three different types of attack:
 
 As described in the previous section, the default network configuration provided
 by Docker can be subject to ARP spoofing attacks. To mitigate this security
-threat there are mainly two possible solution \cite{nyantec_network_docker}.
-\par The first solution is to \textit{drop NET\_RAW capability}. In this way the
+threat there are mainly two possible solution, proposed by \textit{Nyantec}
+\cite{nyantec_network_docker} and that I will analyse in the following. \par The
+first solution is to \textit{drop NET\_RAW capability}. In this way the
 containerised application would not be able to create \textit{PF\_PACKET}
 sockets, that are the ones used to receive or send packets at the device driver
 (OSI Layer 2) level, and so an attacker could not perform an ARP spoofing
@@ -1485,13 +1487,11 @@ filter out ARP packets with incorrect sender protocol or hardware address, that
 is the case of an ARP spoofing attack. In general it is used to filter network
 traffic that pass through a Linux bridge at link layer and higher network
 layers. ebtables can be easily configured, for example we can consider a
-situation in which we want to allow all the ARP reply for a client registered
-with IP address 192.168.0.1 and MAC address 00:1C:B3:de:d8:57 on the eth0 interface and
-to deny all the other ARP replies on the same interface. We can achieve such
-condition simply writing two rules:
+situation in which we want to drop all the ARP replies for a client registered
+with IP address 192.168.0.1 that do not come from the MAC address
+00:1C:B3:de:d8:57. We can achieve such condition simply writing the rule:
 \begin{lstlisting}
-ebtables -A FORWARD -i eth0 -p arp --arp-ip-src 192.168.0.1 --arp-mac-src 00:1C:B3:de:d8:57  -j ACCEPT
-ebtables -A FORWARD -i eth0 -p arp -j DROP
+ebtables -t nat -A PREROUTING -i eth0 -p arp --arp-ip-src 192.168.0.1 --arp-mac-src ! 00:1C:B3:de:d8:57  -j DROP
 \end{lstlisting}
 
 \subsection{Network Policies}
@@ -1503,13 +1503,13 @@ network. In the last paragraph I have analysed solutions to prevent ARP spoofing
 attacks that act on the layer 2 of the OSI stack, in this paragraph I will
 describe how to enhance security on the higher layers. \par \textit{iptables}
 represent a well known solution for monolithic service, but they are not equally
-efficient with microservices. As described by Adel Zaalouk in a post on his blog
-\cite{zaalouk_networking}, five hops of calls are needed from a containerised
-microservice to decide on whether a particular packet should be forwarded or
-not. Moreover, security policies defined by iptables are based on layers 3 and 4
-of the OSI stack, while for a service it would be good to have policies that
-work also at the application layer. \par \textit{Extended Berkeley Packet
-Filters} or \textit{eBPF} represent an appreciated solution to secure
+efficient with microservices. As described by \textit{Adel Zaalouk} in a post on
+his blog \cite{zaalouk_networking}, five hops of calls are needed from a
+containerised microservice to decide on whether a particular packet should be
+forwarded or not. Moreover, security policies defined by iptables are based on
+layers 3 and 4 of the OSI stack, while for a service it would be good to have
+policies that work also at the application layer. \par \textit{Extended Berkeley
+Packet Filters} or \textit{eBPF} represent an appreciated solution to secure
 microservices. eBPF is an extension of the already existing \textit{BPF}, that
 is a tool used to filter packets relying on filter-expressions that are parsed
 into byte-code to be then injected into the kernel in the form of native
@@ -1518,7 +1518,9 @@ packet, thanks to the fact that it hooks into the kernel. In the context of
 containers it can be directly attached on the network namespace, intercepting
 and filtering all the calls quickly. There are different clients that can be
 used to define eBPF's security policies, in the next paragraph I analyse
-\textit{Cilium} that supports by default integration with Docker.
+\textit{Cilium}, a solution proposed by \textit{Arbezzano}
+\cite[Sec.~1.9]{arbezzano_play_safe} and that supports by default integration
+with Docker.
 
 \subsubsection{Cilium}
 
@@ -1693,23 +1695,26 @@ them:
   \item \textit{Encrypt communication with the Docker daemon socket}: the Docker
   daemon runs by default via a non-networked Unix socket. In some situations it
   may be useful to run it using an HTTP socket, so that it could be reachable
-  from the outside. In this case it is important to guarantee that all the
-  communications towards the daemon are encrypted using TLS, preventing
-  unauthorised clients from communicating with it. TLS can be enabled specifying
-  the \code{tlsverify} flag when running the Docker daemon and client,
-  together with the \code{tlscacert} flag to point to a trusted CA
-  certificate. In this way the daemon will only accept clients authenticated by
-  a certificate signed by that CA;
-  \item \textit{Defang SETUID and SETGID binaries}: set User ID (setuid) and
-  Set Group ID (sgid) are two particular permission that can be set on binaries.
+  from the outside. In this case, as suggested by the Docker documentation
+  \cite{docker_TLS}, it is important to guarantee that all the communications
+  towards the daemon are encrypted using TLS, preventing unauthorised clients
+  from communicating with it. TLS can be enabled specifying the \code{tlsverify}
+  flag when running the Docker daemon and client, together with the
+  \code{tlscacert} flag to point to a trusted CA certificate. In this way the
+  daemon will only accept clients authenticated by a certificate signed by that
+  CA;
+  \item \textit{Defang SETUID and SETGID binaries}: set User ID (setuid) and Set
+  Group ID (sgid) are two particular permission that can be set on binaries.
   Thanks to these permissions such binaries are always executed with the
   privileges of the owner or the group, so if a file is owned by the root user
   and it has for example the setuid bit set it will be always executed with root
   privileges. These types of files are very often used by attackers to gain
-  privileges within the Docker system. A little trick to avoid these types of
-  file is to add in our Dockerfile a line in which such files are found and and
-  their permissions are changed. For example to disable setuid rights the
-  following line of code can be used:
+  privileges within the Docker system. A little trick proposed in the book
+  ``Using Docker. Developing and Deploying Software with Containers''
+  \cite[Sec.~13]{mouat_using_docker} is to avoid these types of file is to add
+  in our Dockerfile a line in which such files are found and and their
+  permissions are changed. For example to disable setuid rights the following
+  line of code can be used:
   \begin{lstlisting}[language=bash,breaklines]
     RUN find / -perm +6000 -type f -exec chmod a-s {} \; || true
   \end{lstlisting}
@@ -1735,14 +1740,15 @@ them:
   not be so easy for a user to implement it. A user should indeed launch's a
   container with the \code{--net=none} flag and then he should set up by
   himself the network namespace and all the virtual interfaces;
-  \item \textit{Full virtualisation}: it might seem like a contradiction, but
-  the idea to use two layer of virtualisation could represent an optimal
-  solution for certain kinds of security threats. As we have seen in the
-  previous section, kernel exploits and container breakouts can be
-  dangerous for a Docker system, allowing an escalation from a container
-  directly top the host. For this reasons the idea of adding a second layer of
-  virtualisation could a winner in certain contexts. This solution can be
-  achieved in two different ways: 
+  \item \textit{Full virtualisation}: it might seem like a contradiction, but as
+  pointed out by \textit{Yasrab}
+  \cite[Sec.~5.2.13]{mitigating_docker_security_issues_yasrab} the idea to use
+  two layer of virtualisation could represent an optimal solution for certain
+  kinds of security threats. As we have seen in the previous section, kernel
+  exploits and container breakouts can be dangerous for a Docker system,
+  allowing an escalation from a container directly top the host. For this
+  reasons the idea of adding a second layer of virtualisation could a winner in
+  certain contexts. This solution can be achieved in two different ways: 
   \begin{itemize}
     \item containers that belong to different users or that contain sensitive
     data could be segregated in separate virtual machines;
@@ -1874,13 +1880,12 @@ reports such vulnerability as can be seen in \myfig{\ref{fig:clair_heartbleed}}.
 In the previous sections we have divided Docker's security concerns into two
 different types: static and dynamic. Regarding the latter we have seen how these
 are related to the runtime activity of a Docker container, for example a
-vulnerability not yet patched or a bug in our containerised application. \par As
-seen in the previous section, the use of log mechanisms or specific tools for
-monitoring container's activities can help in these contexts. In particular we
-have seen how Docker offers a native system for logging and how third-party
-software like Sysdig Falco can be used to actively monitor a Docker container.
-We will focus on this last application, showing how it can be used in practice
-to detect attacks. 
+vulnerability not yet patched or a bug in our containerised application. \par
+The use of log mechanisms or specific tools for monitoring container's
+activities can help in these contexts. In particular we have seen how Docker
+offers a native system for logging and how third-party software like Sysdig
+Falco can be used to actively monitor a Docker container. We will focus on this
+last application, showing how it can be used in practice to detect attacks. 
 
 \subsubsection{Setup}
 
@@ -1969,8 +1974,138 @@ as showed in \myfig{\ref{fig:falco_warn}}.
   \caption{Warning from Falco}
   \label{fig:falco_warn}
 \end{figure}
-  
-\newpage
+
+\subsection{Arp Spoofing Prevention}
+
+ARP spoofing attacks represent a serious threat for the security of Docker
+containers. As seen in the previous sections the default network configuration
+of Docker is prone to this type of attack. There are few countermeasures that
+can be taken to prevent such threat, including the use of \textit{ebtables}.
+\par In this subsection we will see a practical demonstration of how an ARP
+spoofing attack can be performed, following the guide provided by Philipp
+Bogaerts \cite{bogaerts_arpspoof} and already described in
+\hyperref[sec:arpspoof_description]{3.1.7}. We will also see how using ebtables
+this attack can be mitigated. 
+
+\subsubsection{Setup}
+
+For this practical evaluation we will use a virtual machine with Debian 9.4 and
+Linux Kernel 4.9.0. We will use the same containers described in
+\hyperref[sec:arpspoof_description]{3.1.7}, plus a fourth container that will
+run \textit{TCPDUMP}. TCPDUMP \cite{tcpdump_man} is a tool used to capture the
+packets in transit on a certain network interface, printing out a description of
+the their contents. \par The following list shows and summarises the four used
+containers: 
+\begin{itemize}
+  \item two containers running the Docker image of \textit{busybox};
+  \item a container based on Debian with \textit{dSniff} installed. This is the
+  container that will perform the attack. Its Dockerfile is the following:
+  \begin{lstlisting}
+FROM debian
+RUN apt-get update && apt-get install -y dsniff
+  \end{lstlisting}
+  \item a container based on Ubuntu with \textit{TCPDUMP} installed, listening
+  on the interface \textit{eth0}. Its Dockerfile is the following:
+  \begin{lstlisting}
+FROM ubuntu
+RUN apt-get update && apt-get install -y tcpdump
+CMD tcpdump -i -n eth0
+  \end{lstlisting}
+\end{itemize}
+
+\subsubsection{Attack Execution}
+
+To perform the attack we will launch the first two containers, using the
+commands: 
+\begin{lstlisting}
+docker run -it --name client1 busybox
+docker run -it --name client2 busybox
+\end{lstlisting}
+On both the containers we will use the command \code{ifconfig} to find out their
+IP and MAC addresses. In our case the first container (\textit{client1}) has IP
+address \textit{172.17.0.2} and MAC address \textit{02:42:AC:11:00:02}, while
+the second container (\textit{client2}) has IP address \textit{172.17.0.3} and
+MAC address \textit{02:42:AC:11:00:03}. From the second container we will ping
+the first container, simply using the command \code{ping 172.17.0.2}. \par Then
+we will launch the third container with the command: 
+\begin{lstlisting}
+docker run -it --name arpspoofer arpspoof
+\end{lstlisting}
+Using the \code{ifconfig} command we can see that the IP address of such
+container is \textit{172.17.0.4}, while its MAC address is
+\textit{02:42:AC:11:00:04}. We will use then the \code{arpspoof}
+command to perform the ARP spoofing attack. In particular we use such command to
+get the traffic in both directions between \textit{client1} and
+\textit{client2}:
+\begin{lstlisting}
+arpspoof -i eth0  -t 172.17.0.3 172.17.0.2 &> /dev/null &
+arpspoof -i eth0  -t 172.17.0.2 172.17.0.3 &> /dev/null &
+\end{lstlisting}
+To verify the effective execution of this attack we will launch the fourth
+container using the command:
+\begin{lstlisting}
+docker run -it --name tcpdumper --net=container:arpsoofer tcpdump
+\end{lstlisting}
+The \code{--net=container:arpsoofer} option is used in this case to share the
+network stack of the \textit{arpspoofer} container with this one. \par The
+correct execution of the attack can be seen in \myfig{\ref{fig:ARP_performed}}.
+
+\begin{figure}[ht!]
+  \centerline{\includegraphics[width=1\textwidth]{ARP_performed.png}}
+  \caption{ARP spoofing performed}
+  \label{fig:ARP_performed}
+\end{figure}
+
+From such figure we can see how all the traffic between the fist two containers
+\textit{client1} and \textit{client2} go through the third one
+(\textit{arpspoofer}). Moreover, from the first container it can be seen how its
+ARP cache is poisoned.
+
+\subsubsection{Attack Mitigation}
+
+Once the correct execution of this attack has been verified, we can see how the
+same can be mitigated using \textit{ebtables}. ebtables can be simply installed
+on our host using APT:
+\begin{lstlisting}
+sudo apt-get update
+sudo apt-get install ebtables
+\end{lstlisting}
+ebtables are divided in three different tables: \textit{filter}, \textit{nat}
+and \textit{broute}. In particular we will use the second one, which is the one
+used to filter packets at the link layer. We will define two policies, that will
+be used to drop all the ARP packets coming from the IP addresses of the first
+two containers but that do not match the real MAC addresses of such containers.
+We can define such rules using the commands: 
+\begin{lstlisting}
+ebtables -t nat -A PREROUTING -p arp --arp-ip-src 172.17.0.2 --arp-mac-src ! 02:42:AC:11:00:02 -j DROP
+ebtables -t nat -A PREROUTING -p arp --arp-ip-src 172.17.0.3 --arp-mac-src ! 02:42:AC:11:00:03 -j DROP
+\end{lstlisting}
+We can verify the correct addition of such policies using the command
+\code{ebtables -t nat -L}, as showed in \myfig{\ref{fig:ebtables_policies}}.
+
+\begin{figure}[ht!]
+  \centerline{\includegraphics[width=1\textwidth]{ebtables_policies.png}}
+  \caption{ebtables policies}
+  \label{fig:ebtables_policies}
+\end{figure}
+
+At this point we can proceed to re-execute the ARP spoofing attack, following
+the same steps previously analysed. In this case we can see how the attack is
+not successful, as it can be seen in \myfig{\ref{fig:ARP_mitigated}}.
+
+\begin{figure}[ht!]
+  \centerline{\includegraphics[width=1\textwidth]{ARP_mitigated.png}}
+  \caption{ARP spoofing mitigated}
+  \label{fig:ARP_mitigated}
+\end{figure}
+
+From this figure we can see how the ARP cache in the first container is not
+poisoned and also from the \textit{tcpdumper} how the traffic between
+\textit{client1} and \textit{client2} does not go through the
+\textit{arpspoofer} container.
+
+
+\clearpage
 
 \section{Conclusions}
 \label{sec:conclusions}
@@ -2028,7 +2163,11 @@ Virtualisation,
 \url{https://en.wikipedia.org/wiki/Virtualization}
 
 \bibitem{bui_docker_security}
-Thanh Bui, ``Analysis of Docker Security'', January 2015
+Thanh Bui, 
+``Analysis of Docker Security'', 
+CoRR,
+January 2015,
+\url{http://arxiv.org/abs/1501.02967}
 
 \bibitem{wikipedia_LXC}
 LXC, \url{https://en.wikipedia.org/wiki/LXC}
@@ -2074,7 +2213,11 @@ The most common use cases of Docker containers and organisations,
 \url{https://www.ibm.com/blogs/systems/the-most-common-use-cases-of-docker-containers-and-organizations/}
 
 \bibitem{mitigating_docker_security_issues_yasrab}
-Robail Yasrab, ``Mitigating Docker Security Issues'', April 2018
+Robail Yasrab, 
+``Mitigating Docker Security Issues'', 
+CoRR,
+April 2018,
+\url{http://arxiv.org/abs/1804.05039}
 
 \bibitem{sysdig_docker_vulnerabilities}
 Seven Docker security vulnerabilities and threats,
@@ -2120,8 +2263,12 @@ Docker Image Insecurity, \\ \url{https://titanous.com/posts/docker-insecurity}
 CVE-2014-9357, \url{https://access.redhat.com/security/cve/cve-2014-9357}
 
 \bibitem{gummaraju_desikan_turner}
-G. Jayanth, T. Desikan, Y. Turner, ``Over 30\% of Official Images in Docker Hub
-Contain High Priority Security Vulnerabilities'', BanyanOps, 2015
+J. Gummaraju, T. Desikan, Y. Turner, 
+``Over 30\% of Official Images in Docker Hub Contain High Priority Security
+Vulnerabilities'', 
+BanyanOps, 
+2015,
+\url{ https://www.banyanops.com/blog/analyzing-docker-hub/}
 
 \bibitem{privileged_accounts_managers}
 What is Privileged Account Management?,
@@ -2144,21 +2291,42 @@ IBM Data Science Experience: Whole-Cluster Privilege Escalation Disclosure,
 ARP spoofing Docker containers,
 \url{https://dockersec.blogspot.com/2017/01/arp-spoofing-docker-containers_26.html}
 
+\bibitem{raj_et_al}
+A. Raj MP, A.Kumar, S. J. Pai, A. Gopal, 
+``Enhancing Security of Docker using Linux hardening techniques'',
+2nd International Conference on Applied and Theoretical Computing and
+Communication Technology (iCATccT),
+SJB Institute of Technology, Bengalaru, Karnataka (India), Jul 21-23, 2016,
+pp.\ 94-99
+
 \bibitem{kabbe_security_docker}
-J. Kabbe, ``Security analysis of Docker containers in
-a production environment'', Norwegian University of Science and Technology, 2017
+J. Kabbe, 
+``Security analysis of Docker containers in a production environment'', 
+Norwegian University of Science and Technology, 
+June 2017
 
 \bibitem{to_docker_or_not_to_docker}
-T. Combe, A. Martin, R. Di Pietro, ``To Docker or Not to Docker: A Security
-Perspective'', IEEE Computer Society, 2016
+T. Combe, A. Martin, R. Di Pietro, 
+``To Docker or Not to Docker: A Security Perspective'', 
+IEEE Cloud Computing,
+September 2016,
+pp.\ 54-62,
+DOI 10.1109/MCC.2016.100
 
 \bibitem{arbezzano_play_safe}
 Container security and immutability,
 \url{https://gianarb.it/blog/container-security-immutability}
 
 \bibitem{mouat_using_docker}
-A. Mouat, ``Using Docker. Developing and Deploying Software with Containers'',
-O'Reilly Media, 2015
+A. Mouat, 
+``Image Provenance''
+in the book
+``Using Docker. Developing and Deploying Software with Containers''
+edited by
+B. Anderson,
+O'Reilly Media, 
+December 2015,
+pp.\ 300-307
 
 \bibitem{wiki_MAC}
 "Mandatory access control" Wikipedia Page,
@@ -2166,13 +2334,6 @@ O'Reilly Media, 2015
 
 \bibitem{bane_jesse_frazelle}
 bane, \url{https://github.com/genuinetools/bane}
-
-\bibitem{licshield}
-LiCShield, \url{https://github.com/2m4t/LiCShield}
-
-\bibitem{licshield_paper}
-M. Mattetti, A. Shulman-Peleg, Y. Allouche, A. Corradi, S. Dolev, L. Foschini,
-``Security hardening of Linux containers and their workloads'', 2015
 
 \bibitem{wiki_grsecurity}
 grsecurity Page, \url{https://en.wikipedia.org/wiki/Grsecurity}
@@ -2186,6 +2347,10 @@ Hardened/PaX Quickstart,
 Manage sensitive data with Docker secrets,
 \url{https://docs.docker.com/engine/swarm/secrets/}
 
+\bibitem{katacoda_vault}
+Docker in Production - Store Secrets using Hashicorp Vault,
+\url{https://www.katacoda.com/courses/docker-production/vault-secrets}
+
 \bibitem{hashicorp_vault}
 What is Vault?, \url{https://www.vaultproject.io/intro}
 
@@ -2194,7 +2359,7 @@ Consul, \url{https://www.consul.io/}
 
 \bibitem{isolate_namespace}
 Isolate containers with a user namespace,
-\url{https://docs.docker.com/engine/security/userns-remap/#about-remapping-and-subordinate-user-and-group-ids}
+\url{https://docs.docker.com/engine/security/userns-remap}
 
 \bibitem{docker_security_scanning}
 Docker Security Scanning,
@@ -2216,6 +2381,9 @@ Configure logging drivers,
 
 \bibitem{sysdig_falco}
 Sysdig Falco, \url{https://github.com/draios/falco}
+
+\bibitem{docker_TLS}
+Protect the Docker daemon socket, \url{https://docs.docker.com/engine/security/https/}
 
 \bibitem{nyantec_network_docker}
 Docker networking considered harmful,
@@ -2239,6 +2407,9 @@ Clair Scanner, \url{https://github.com/arminc/clair-scanner}
 
 \bibitem{falco_doc}
 Sysdig Falco Documentation, \url{https://github.com/draios/falco/wiki}
+
+\bibitem{tcpdump_man}
+Manpage of TCPDUMP, \url{https://www.tcpdump.org/tcpdump_man.html}
 
 \end{thebibliography}
 
