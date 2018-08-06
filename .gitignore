@@ -232,4 +232,5 @@ TSWLatexianTemp*
 
 # standalone packages
 *.sta
+*.zip
 
